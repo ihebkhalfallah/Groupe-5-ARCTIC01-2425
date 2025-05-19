@@ -8,21 +8,11 @@ import tn.esprit.spring.DAO.Entities.Universite;
 import tn.esprit.spring.Services.Universite.IUniversiteService;
 
 @SpringBootApplication
-//@EnableScheduling
+@EnableScheduling
 public class FoyerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(FoyerApplication.class, args);
     }
 
-//    @Autowired
-//    IUniversiteService universiteService;
-//
-//    Universite u = Universite.builder()
-//            .nomUniversite("ESPRIT")
-//            .adresse("Ariana")
-//            .build();
-//
-//    Universite saved = universiteService.addOrUpdate(u);
-//    System.out.print()
 }

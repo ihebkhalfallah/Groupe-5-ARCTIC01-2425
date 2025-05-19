@@ -16,9 +16,7 @@ public class UniversiteService implements IUniversiteService {
 
     @Override
     public Universite addOrUpdate(Universite u) {
-        System.out.println("Before save: " + u);
         Universite saved = repo.save(u);
-        System.out.println("After save: " + saved);
         return saved;
     }
 
