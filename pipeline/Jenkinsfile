@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
+        BRANCH = 'main'
+        GIT_CREDENTIALS_ID = 'jenkins-pipeline'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                echo "Cloning branch '${BRANCH}' from '${GIT_REPO}'"
+                git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
+            }
+        }
+
+        stage('Clean Target Directory') {
+            steps {
+                echo "Cleaning target directory..."
+                sh 'mvn clean'
+            }
+        }
+
+        stage('Compile Source Code') {
+            steps {
+                echo "Compiling source code..."
+                sh 'mvn compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+                sh 'mvn test'
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                echo "Packaging the application..."
+                sh 'mvn package'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying artifact to remote repository..."
+                sh 'mvn deploy'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed. Please check the logs.'
+        }
+        always {
+            echo '🔁 Pipeline execution finished.'
+        }
+    }
+}
