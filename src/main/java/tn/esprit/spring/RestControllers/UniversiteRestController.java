@@ -17,6 +17,8 @@ public class UniversiteRestController {
 
     @PostMapping("addOrUpdate")
     Universite addOrUpdate(@RequestBody Universite u) {
+
+        System.out.println("controller "+u );
         return service.addOrUpdate(u);
     }
 
