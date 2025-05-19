@@ -28,12 +28,12 @@ public class FoyerAspect4SE1 { // La classe : Aspect
         log.info("Out of method "+jp.getSignature().getName());
     }
 
-    @Around("execution(* tn.esprit.spring.Services..*.*(..))")
-    public Object execution(ProceedingJoinPoint pjp) throws Throwable {
-        long start = System.currentTimeMillis();
-        Object obj = pjp.proceed();
-        long elapsedTime = System.currentTimeMillis() - start;
-        log.info("Method execution time: " + elapsedTime + " milliseconds.");
-        return obj;
-    }
+//    @Around("execution(* tn.esprit.spring.Services..*.*(..))")
+//    public Object execution(ProceedingJoinPoint pjp) throws Throwable {
+//        long start = System.currentTimeMillis();
+//        Object obj = pjp.proceed();
+//        long elapsedTime = System.currentTimeMillis() - start;
+//        log.info("Method execution time: " + elapsedTime + " milliseconds.");
+//        return obj;
+//    }
 }
