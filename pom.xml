@@ -69,5 +69,10 @@
             </plugin>
         </plugins>
     </build>
-
+<distributionManagement>
+    <repository>
+        <id>firstPipeline</id>
+        <url>http://http://172.20.10.2:8081/repository/maven-releases/</url>
+    </repository>
+</distributionManagement>
 </project>
