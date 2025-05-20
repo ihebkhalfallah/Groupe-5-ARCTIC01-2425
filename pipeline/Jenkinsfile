@@ -30,6 +30,21 @@ pipeline {
                 sh 'mvn compile'
             }
         }
+        
+        stage('Run with Docker Compose') {
+            steps {
+                echo "Starting services with Docker Compose..."
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d --build'
+            }
+        }
+
+        stage('Wait for DB to be ready') {
+            steps {
+                echo "Waiting for MySQL to be ready..."
+                sh 'sleep 30'
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
@@ -52,14 +67,6 @@ pipeline {
             }
         }
 
-        stage('Run with Docker Compose') {
-            steps {
-                echo "Starting services with Docker Compose..."
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d --build'
-            }
-        }
-
         stage('Deploy') {
             steps {
                 echo "Deploying artifact to remote repository..."
@@ -78,7 +85,7 @@ pipeline {
         always {
             echo '🔁 Pipeline execution finished.'
             echo 'Cleaning up Docker containers...'
-            sh 'docker-compose -f docker-compose.yml down'
+            // sh 'docker-compose -f docker-compose.yml down'
         }
     }
 }
