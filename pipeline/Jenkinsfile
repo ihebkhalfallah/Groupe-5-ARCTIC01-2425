@@ -5,7 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
         BRANCH = 'main'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
-        SONARQUBE_SERVER = 'http://localhost:9000/
+        SONARQUBE_SERVER = 'http://localhost:9000/'
         SONAR_TOKEN = '12f73f1cca8954c714d8bd94b255aa0c2bd042a6'
     }
 
