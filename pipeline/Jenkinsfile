@@ -5,7 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
         BRANCH = 'main'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
-        SONARQUBE_ENV = 'sonarqube-token'
+        SONAR_TOKEN = 'SONAR_TOKEN'
     }
 
     stages {
@@ -26,7 +26,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=foyer -Dsonar.host.url=http://localhost:9000'
+                    sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
                 }
             }
         }
