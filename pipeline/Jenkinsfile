@@ -5,6 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
         BRANCH = 'main'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
+        SONARQUBE_ENV = 'sonarqube-token'
     }
 
     stages {
@@ -19,6 +20,14 @@ pipeline {
             steps {
                 echo "Cleaning target directory..."
                 sh 'mvn clean'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=foyer -Dsonar.host.url=http://localhost:9000'
+                }
             }
         }
 
