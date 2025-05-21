@@ -97,6 +97,10 @@ pipeline {
         }
         failure {
             echo '❌ Pipeline failed. Please check the logs.'
+            sh '''
+                    docker stop test-mysql || true
+                    docker rm test-mysql || true
+                '''
         }
         always {
             echo '🔁 Pipeline execution finished.'
