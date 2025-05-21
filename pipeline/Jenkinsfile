@@ -31,25 +31,24 @@ pipeline {
             }
         }
         
-        stage('Run with Docker Compose') {
-            steps {
-                echo "Starting services with Docker Compose..."
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d --build'
-            }
-        }
-
-        stage('Wait for DB to be ready') {
-            steps {
-                echo "Waiting for MySQL to be ready..."
-                sh 'sleep 30'
-            }
-        }
 
         stage('SonarQube Analysis') {
             steps {
                 echo "Code analysis"
                 sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
+            }
+        }
+        
+        stage('Start Test Database') {
+            steps {
+                echo "Starting temporary MySQL container..."
+                sh '''
+                    docker run --name test-mysql -e MYSQL_ROOT_PASSWORD=root \
+                        -e MYSQL_DATABASE=testdb -e MYSQL_USER=testuser \
+                        -e MYSQL_PASSWORD=testpass -p 3306:3306 -d mysql:8.0
+                '''
+                echo "Waiting for MySQL to initialize..."
+                sh 'sleep 30'
             }
         }
 
@@ -60,10 +59,27 @@ pipeline {
             }
         }
 
+        stage('Remove Test Database') {
+            steps {
+                echo "Removing temporary MySQL container..."
+                sh '''
+                    docker stop test-mysql || true
+                    docker rm test-mysql || true
+                '''
+            }
+        }
         stage('Build JAR') {
             steps {
                 echo "Packaging the application..."
                 sh 'mvn package'
+            }
+        }
+
+        stage('Run with Docker Compose') {
+            steps {
+                echo "Starting services with Docker Compose..."
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d --build'
             }
         }
 
