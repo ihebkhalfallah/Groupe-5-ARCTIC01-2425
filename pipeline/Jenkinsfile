@@ -43,12 +43,12 @@ pipeline {
             steps {
                 echo "Starting temporary MySQL container..."
                 sh '''
-                    docker run --name test-mysql -e MYSQL_ROOT_PASSWORD=root \
+                    docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=root \
                         -e MYSQL_DATABASE=testdb -e MYSQL_USER=testuser \
                         -e MYSQL_PASSWORD=testpass -p 3306:3306 -d mysql:8.0
                 '''
                 echo "Waiting for MySQL to initialize..."
-                sh 'sleep 30'
+                sh 'sleep 60'
             }
         }
 
@@ -63,8 +63,8 @@ pipeline {
             steps {
                 echo "Removing temporary MySQL container..."
                 sh '''
-                    docker stop test-mysql || true
-                    docker rm test-mysql || true
+                    docker stop mysql-container || true
+                    docker rm mysql-container || true
                 '''
             }
         }
@@ -98,8 +98,8 @@ pipeline {
         failure {
             echo '❌ Pipeline failed. Please check the logs.'
             sh '''
-                    docker stop test-mysql || true
-                    docker rm test-mysql || true
+                    docker stop mysql-container || true
+                    docker rm mysql-container || true
                 '''
         }
         always {
