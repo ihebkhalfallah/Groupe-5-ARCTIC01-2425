@@ -3,89 +3,82 @@ pipeline {
 
     environment {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
-        BRANCH = 'main'
+        BRANCH = 'molka-etudiant'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
-        SONARQUBE_SERVER = 'http://localhost:9000/'
-        SONAR_TOKEN = '12f73f1cca8954c714d8bd94b255aa0c2bd042a6'
+        SONARQUBE_SERVER = 'http://localhost:9000'
+        SONAR_TOKEN = '342bac35c40ab46e69046cda2e7a5e8c7b13c313'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Cloner le dépôt Git') {
             steps {
-                echo "Cloning branch '${BRANCH}' from '${GIT_REPO}'"
+                echo "Clonage de la branche '${BRANCH}' depuis le dépôt '${GIT_REPO}'"
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
-        stage('Clean Target Directory') {
+        stage('Nettoyage et compilation') {
             steps {
-                echo "Cleaning target directory..."
-                sh 'mvn clean'
+                echo "Exécution de mvn clean compile"
+                sh 'mvn clean compile'
             }
         }
 
-        stage('Compile Source Code') {
+        stage('Analyse SonarQube') {
             steps {
-                echo "Compiling source code..."
-                sh 'mvn compile'
+                echo "Lancement de l’analyse SonarQube"
+                sh """
+                    mvn sonar:sonar \
+                        -Dsonar.projectKey=molka-projet \
+                        -Dsonar.host.url=${SONARQUBE_SERVER} \
+                        -Dsonar.login=${SONAR_TOKEN}
+                """
             }
         }
-        
 
-        stage('SonarQube Analysis') {
+        stage('Lancer un conteneur MySQL') {
             steps {
-                echo "Code analysis"
-                sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
-            }
-        }
-        
-        stage('Start Test Database') {
-            steps {
-                echo "Starting temporary MySQL container..."
+                echo "Démarrage d’un conteneur MySQL pour les tests"
                 sh '''
-                    docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=root \
-                        -e MYSQL_DATABASE=testdb -e MYSQL_USER=testuser \
-                        -e MYSQL_PASSWORD=testpass -p 3306:3306 -d mysql:5.7
+                    docker run --rm --name mysql-test-container \
+                        -e MYSQL_ROOT_PASSWORD=root \
+                        -e MYSQL_DATABASE=testdb \
+                        -e MYSQL_USER=testuser \
+                        -e MYSQL_PASSWORD=testpass \
+                        -p 3306:3306 -d mysql:5.7
                 '''
-                echo "Waiting for MySQL to initialize..."
-                sh 'sleep 60'
+                echo "Pause pour laisser MySQL démarrer correctement"
+                sh 'sleep 25'
             }
         }
 
-        stage('Test') {
+        stage('Exécution des tests unitaires') {
             steps {
-                echo "Running tests..."
+                echo "Lancement des tests avec Maven"
                 sh 'mvn test'
             }
         }
 
-        stage('Remove Test Database') {
+        stage('Création du package') {
             steps {
-                echo "Removing temporary MySQL container..."
-                sh '''
-                    docker stop mysql-container || true
-                    docker rm mysql-container || true
-                '''
-            }
-        }
-        stage('Build JAR') {
-            steps {
-                echo "Packaging the application..."
+                echo "Génération du package (JAR/WAR)"
                 sh 'mvn package'
             }
         }
 
-        stage('Run with Docker Compose') {
+        stage('Déploiement avec Docker Compose') {
             steps {
-                echo "Starting services with Docker Compose..."
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d --build'
+                echo "Exécution de docker-compose up"
+                sh '''
+                    docker-compose down || true
+                    docker-compose up -d --build
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Déploiement final') {
             steps {
-                echo "Deploying artifact to remote repository..."
+                echo "Déploiement de l’application via Maven deploy"
                 sh 'mvn deploy'
             }
         }
@@ -93,19 +86,14 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo 'Pipeline exécuté avec succès.'
         }
         failure {
-            echo '❌ Pipeline failed. Please check the logs.'
-            sh '''
-                    docker stop mysql-container || true
-                    docker rm mysql-container || true
-                '''
+            echo 'Le pipeline a échoué.'
         }
         always {
-            echo '🔁 Pipeline execution finished.'
-            echo 'Cleaning up Docker containers...'
-            // sh 'docker-compose -f docker-compose.yml down'
+            echo 'Nettoyage post-exécution.'
+            sh 'docker-compose down || true'
         }
     }
 }
