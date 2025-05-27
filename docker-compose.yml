@@ -40,21 +40,6 @@ services:
     networks:
       - backend
 
-  app:
-    build: .
-    container_name: foyer-backend
-    depends_on:
-      mysql:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/foyer?useSSL=false&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-    ports:
-      - "8086:8086"
-    networks:
-      - backend
-
 networks:
   backend:
 
