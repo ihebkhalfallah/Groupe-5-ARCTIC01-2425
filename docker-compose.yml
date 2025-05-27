@@ -1,5 +1,5 @@
 version: '3.8'
-
+#add phpmyadmin
 services:
   mysql:
     image: mysql:5.7
@@ -7,7 +7,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: foyer
     networks:
       - backend
@@ -17,6 +17,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - "8085:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
+    networks:
+      - backend
 
   sonarqube:
     image: sonarqube:8.9.7-community
@@ -37,21 +49,6 @@ services:
       - "8081:8081"
     volumes:
       - nexus_data:/nexus-data
-    networks:
-      - backend
-
-  app:
-    build: .
-    container_name: foyer-backend
-    depends_on:
-      mysql:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/foyer?useSSL=false&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-    ports:
-      - "8086:8086"
     networks:
       - backend
 
