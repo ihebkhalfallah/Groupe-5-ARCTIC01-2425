@@ -1,5 +1,5 @@
 version: '3.8'
-
+#add phpmyadmin
 services:
   mysql:
     image: mysql:5.7
@@ -7,7 +7,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
       MYSQL_DATABASE: foyer
     networks:
       - backend
