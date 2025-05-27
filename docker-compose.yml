@@ -7,8 +7,8 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_DATABASE=foyer
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: foyer
     networks:
       - backend
     healthcheck:
@@ -17,6 +17,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
+    networks:
+      - backend
 
   sonarqube:
     image: sonarqube:8.9.7-community
