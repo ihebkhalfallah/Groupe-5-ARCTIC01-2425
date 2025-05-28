@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: ihebkhalfallah777/backend
+    image: ihebkhalfallah777/backend
     container_name: backend
     depends_on:
       mysql:
