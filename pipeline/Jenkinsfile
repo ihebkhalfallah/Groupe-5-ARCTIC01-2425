@@ -6,29 +6,30 @@ pipeline {
         BRANCH = 'iheb-universite'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
         SONARQUBE_SERVER = 'http://localhost:9000/'
-        SONAR_TOKEN = 'b570a98e9f3847024a863f7958c006410722c73d' // to be moved
+        SONAR_TOKEN = '27d079ebe7229b74ee68d1f6f62d37579d723abc' // to be moved
         DOCKERHUB_CREDENTIALS = 'token-docker-hub'
         IMAGE_NAME = 'backend'
         IMAGE_TAG = 'latest'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone repository') {
             steps {
                 echo "Cloning branch '${BRANCH}' from '${GIT_REPO}'"
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
         
-        stage('Run with Docker Compose') {
+        stage('Run env docker compose') {
             steps {
                 echo "Starting services with Docker Compose..."
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d --build'
+                sh 'docker-compose -f docker/docker-compose.env.yml down || true'
+                sh 'docker-compose -f ./docker/docker-compose.env.yml up -d --build'
                 sh 'sleep 60'
             }
         }
-        stage('Clean Target Directory') {
+        
+        stage('Clean target directory') {
             steps {
                 echo "Cleaning target directory..."
                 sh 'mvn clean'
@@ -51,14 +52,14 @@ pipeline {
         //     }
         // }
 
-        stage('Compile Source Code') {
+        stage('Compile source code') {
             steps {
                 echo "Compiling source code..."
                 sh 'mvn compile'
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube analysis') {
             steps {
                 echo "Code analysis"
                 sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
@@ -71,7 +72,7 @@ pipeline {
                 sh 'mvn test'
             }
         }
-
+        
         stage('Build JAR') {
             steps {
                 echo "Packaging the application..."
@@ -79,20 +80,20 @@ pipeline {
             }
         }
         
-        // stage('Remove Test Database') {
-        //     steps {
-        //         echo "Removing temporary MySQL container..."
-        //         sh '''
-        //          docker stop mysql-container || true
-        //          docker rm mysql-container || true
-        //         '''
-        //     }
-        // }
-        
         stage('Deploy') {
             steps {
                 echo "Deploying artifact to remote repository..."
                 sh 'mvn deploy'
+            }
+        }
+        
+        stage('Stop and remove test database') {
+            steps {
+                echo "Stopping and removing test database container..."
+                sh '''
+                    docker stop test-container || true
+                    docker rm test-container || true
+                '''
             }
         }
 
@@ -118,6 +119,14 @@ pipeline {
                     echo 'Pushing docker image to docker hub...'
                     sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
+            }
+        }
+        
+        stage('Run prod docker compose') {
+            steps {
+                echo "Starting services with Docker Compose..."
+                sh 'docker-compose -f docker/docker-compose.prod.yml down || true'
+                sh 'docker-compose -f docker/docker-compose.prod.yml up -d --build'
             }
         }
     }
