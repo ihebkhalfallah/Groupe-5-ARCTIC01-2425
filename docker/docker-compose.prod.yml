@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ihebkhalfallah777/backend
+    container_name: backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8086:8086"
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: foyer
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
