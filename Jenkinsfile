@@ -17,10 +17,10 @@ pipeline {
             }
         }
 
-        stage('Testing Maven') {
+     /*   stage('Testing Maven') {
             steps {
                 sh 'mvn -version'
             }
-        }
+        }*/
     }
 }
