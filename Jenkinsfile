@@ -1,26 +1,47 @@
 pipeline {
     agent any
 
+    triggers {
+        // Déclenche la pipeline à chaque push sur la branche principale (ex: master)
+        pollSCM('H/5 * * * *') // vérifie toutes les 5 minutes, tu peux aussi utiliser webhook côté Jenkins
+    }
+
     stages {
-        stage('Hello') {
+        stage('Checkout') {
             steps {
-                echo 'Hello World'
+                // Récupération du code source depuis Git
+                checkout scm
             }
         }
 
-        stage('Checkout GIT') {
+        stage('Clean') {
             steps {
-                echo 'Pulling...'
-                git branch: 'main',
-                    url: 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
-                // Ajoute `credentialsId` ici si besoin
+                // Suppression du contenu du dossier target
+                sh 'rm -rf target/*'
             }
         }
 
-     /*   stage('Testing Maven') {
+        stage('Compile') {
             steps {
-                sh 'mvn -version'
+                // Compilation - exemple avec Maven
+                sh 'mvn clean compile'
             }
-        }*/
+        }
+
+        stage('Package') {
+            steps {
+                // Création du livrable (ex: jar, war...)
+                sh 'mvn package'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline terminée avec succès !'
+        }
+        failure {
+            echo 'La pipeline a échoué.'
+        }
     }
 }
