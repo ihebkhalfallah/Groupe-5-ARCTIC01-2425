@@ -1,4 +1,4 @@
-package tn.esprit.spring.Services.Foyer;
+package tn.esprit.spring;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import tn.esprit.spring.DAO.Entities.Foyer;
 import tn.esprit.spring.DAO.Repositories.FoyerRepository;
+import tn.esprit.spring.Services.Foyer.FoyerService;
 
 import java.util.Arrays;
 import java.util.List;

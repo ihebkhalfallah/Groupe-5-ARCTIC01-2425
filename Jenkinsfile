@@ -32,12 +32,12 @@ pipeline {
             }
         }
 
-        stage('Package') {
-            steps {
-                // Création du livrable après avoir validé les tests
-                sh 'mvn package'
-            }
-        }
+         stage('Package') {
+                   steps {
+                       // Création du livrable (ex: jar, war...)
+                       sh 'mvn package  -DskipTests'
+                   }
+               }
     }
 
     post {
