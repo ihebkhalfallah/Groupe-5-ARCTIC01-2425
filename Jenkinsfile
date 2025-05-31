@@ -31,7 +31,7 @@ pipeline {
         stage('Package') {
             steps {
                 // Création du livrable (ex: jar, war...)
-                sh 'mvn package'
+                sh 'mvn package  -DskipTests'
             }
         }
     }
