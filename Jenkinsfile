@@ -2,36 +2,40 @@ pipeline {
     agent any
 
     triggers {
-        // Déclenche la pipeline à chaque push sur la branche principale (ex: master)
-        pollSCM('H/5 * * * *') // vérifie toutes les 5 minutes, tu peux aussi utiliser webhook côté Jenkins
+        // Déclenche la pipeline à chaque push sur la branche principale
+        pollSCM('H/5 * * * *')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Récupération du code source depuis Git
                 checkout scm
             }
         }
 
         stage('Clean') {
             steps {
-                // Suppression du contenu du dossier target
                 sh 'rm -rf target/*'
             }
         }
 
         stage('Compile') {
             steps {
-                // Compilation - exemple avec Maven
                 sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Exécution des tests unitaires (Mockito, JUnit, etc.)
+                sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
-                // Création du livrable (ex: jar, war...)
-                sh 'mvn package  -DskipTests'
+                // Création du livrable après avoir validé les tests
+                sh 'mvn package'
             }
         }
     }
