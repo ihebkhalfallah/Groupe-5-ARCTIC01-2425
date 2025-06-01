@@ -29,7 +29,7 @@ public class FoyerAspect4SIM2 /* La classe: Aspect */  {
     public void beforeAdvice2(JoinPoint jp){
         log.info("Ranni méthode ajouter");
     }
-
+/*
     @Around("execution(* tn.esprit.spring.Services..*.*(..))")
     public Object profile(ProceedingJoinPoint pjp) throws Throwable
     {
@@ -40,4 +40,6 @@ public class FoyerAspect4SIM2 /* La classe: Aspect */  {
         //return obj;
         return null;
     }
+
+ */
 }

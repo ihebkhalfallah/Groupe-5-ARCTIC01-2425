@@ -16,9 +16,7 @@ public class UniversiteRestController {
     IUniversiteService service;
 
     @PostMapping("addOrUpdate")
-    Universite addOrUpdate(@RequestBody Universite u) {
-        return service.addOrUpdate(u);
-    }
+    Universite addOrUpdate(@RequestBody Universite u) {return service.addOrUpdate(u);}
 
     @GetMapping("findAll")
     List<Universite> findAll() {
