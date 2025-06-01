@@ -24,9 +24,13 @@ public class Bloc{
     long capaciteBloc;
     
     @ManyToOne
+    @JoinColumn(name = "foyer_id_foyer")
     @JsonIgnore
     Foyer foyer;
     @OneToMany(mappedBy = "bloc", fetch = FetchType.EAGER)
     @JsonIgnore
     List<Chambre> chambres= new ArrayList<>();
+
+
+
 }

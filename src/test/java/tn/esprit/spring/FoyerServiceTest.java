@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.DAO.Entities.Foyer;
 import tn.esprit.spring.DAO.Entities.Universite;
+import tn.esprit.spring.DAO.Repositories.BlocRepository;
 import tn.esprit.spring.DAO.Repositories.FoyerRepository;
 import tn.esprit.spring.DAO.Repositories.UniversiteRepository;
 import tn.esprit.spring.Services.Foyer.IFoyerService;
@@ -27,6 +28,8 @@ public class FoyerServiceTest {
 
     @Autowired
     FoyerRepository foyerRepository;
+    @Autowired
+    BlocRepository blocRepository;
     @Autowired
     IFoyerService foyerService;
 
@@ -78,17 +81,25 @@ public class FoyerServiceTest {
         assertNotNull(updatedU.getFoyer());
         assertEquals(result.getIdFoyer(), updatedU.getFoyer().getIdFoyer());
     }
-
+/*
     @AfterAll
     void cleanup() {
         if (foyerId != null) {
-            foyerService.deleteById(foyerId); // supprime aussi les blocs associés
+            List<Bloc> blocs = foyerRepository.findById(foyerId)
+                    .map(Foyer::getBlocs)
+                    .orElse(new ArrayList<>());
+            if (!blocs.isEmpty()) {
+                blocRepository.deleteAll(blocs);
+            }
+            foyerRepository.deleteById(foyerId); // delete foyer after deleting blocs
         }
+
         if (universiteId != null) {
             universiteService.deleteById(universiteId);
         }
     }
 
+*/
     @Test
     void testInjection() {
         assertNotNull(universiteService, "universiteService is not injected!");
