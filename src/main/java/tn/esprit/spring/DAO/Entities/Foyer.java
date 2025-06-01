@@ -24,6 +24,7 @@ public class Foyer implements Serializable {
     long capaciteFoyer;
     @OneToOne(mappedBy = "foyer")
     Universite universite;
-    @OneToMany(mappedBy = "foyer")
+    @OneToMany(mappedBy = "foyer", cascade = CascadeType.REMOVE)
     List<Bloc> blocs= new ArrayList<>();
+
 }

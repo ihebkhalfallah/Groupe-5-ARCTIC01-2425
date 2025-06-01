@@ -6,9 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.DAO.Entities.Foyer;
 import tn.esprit.spring.DAO.Entities.Universite;
+import tn.esprit.spring.DAO.Repositories.FoyerRepository;
 import tn.esprit.spring.DAO.Repositories.UniversiteRepository;
 import tn.esprit.spring.Services.Foyer.IFoyerService;
 import tn.esprit.spring.Services.Universite.IUniversiteService;
+import org.junit.jupiter.api.TestMethodOrder;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FoyerServiceTest {
     @Autowired
     UniversiteRepository universiteRepository;
+
+    @Autowired
+    FoyerRepository foyerRepository;
     @Autowired
     IFoyerService foyerService;
 
@@ -76,12 +82,13 @@ public class FoyerServiceTest {
     @AfterAll
     void cleanup() {
         if (foyerId != null) {
-            foyerService.deleteById(foyerId);
+            foyerService.deleteById(foyerId); // supprime aussi les blocs associés
         }
         if (universiteId != null) {
             universiteService.deleteById(universiteId);
         }
     }
+
     @Test
     void testInjection() {
         assertNotNull(universiteService, "universiteService is not injected!");
