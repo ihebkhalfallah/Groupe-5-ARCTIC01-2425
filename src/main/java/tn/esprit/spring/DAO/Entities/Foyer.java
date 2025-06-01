@@ -1,4 +1,6 @@
+/*
 package tn.esprit.spring.DAO.Entities;
+
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,4 +29,39 @@ public class Foyer implements Serializable {
     @OneToMany(mappedBy = "foyer", cascade = CascadeType.REMOVE)
     List<Bloc> blocs= new ArrayList<>();
 
+
+}
+*/
+package tn.esprit.spring.DAO.Entities;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "T_FOYER")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class Foyer implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    long idFoyer;
+
+    String nomFoyer;
+
+    long capaciteFoyer;
+
+    @OneToOne(mappedBy = "foyer", cascade = CascadeType.ALL)
+    Universite universite;
+
+    @OneToMany(mappedBy = "foyer", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Bloc> blocs = new ArrayList<>();
 }

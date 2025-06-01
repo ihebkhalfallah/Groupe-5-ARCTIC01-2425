@@ -1,4 +1,4 @@
-package tn.esprit.spring.Services.Foyer;
+/*package tn.esprit.spring.Services.Foyer;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -106,4 +106,107 @@ public class FoyerService implements IFoyerService {
     }
 
 
+}
+*/
+package tn.esprit.spring.Services.Foyer;
+
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import tn.esprit.spring.DAO.Entities.*;
+import tn.esprit.spring.DAO.Repositories.BlocRepository;
+import tn.esprit.spring.DAO.Repositories.FoyerRepository;
+import tn.esprit.spring.DAO.Repositories.UniversiteRepository;
+
+import java.util.List;
+
+@Service
+@AllArgsConstructor
+public class FoyerService implements IFoyerService {
+    private final FoyerRepository foyerRepository;
+    private final UniversiteRepository universiteRepository;
+    private final BlocRepository blocRepository;
+
+    @Override
+    public Foyer addOrUpdate(Foyer f) {
+        return foyerRepository.save(f);
+    }
+
+    @Override
+    public List<Foyer> findAll() {
+        return foyerRepository.findAll();
+    }
+
+    @Override
+    public Foyer findById(long id) {
+        return foyerRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void deleteById(long id) {
+        foyerRepository.deleteById(id);
+    }
+
+    @Override
+    public void delete(Foyer f) {
+        foyerRepository.delete(f);
+    }
+
+    @Override
+    public Universite affecterFoyerAUniversite(long idFoyer, String nomUniversite) {
+        Foyer f = findById(idFoyer);
+        Universite u = universiteRepository.findByNomUniversite(nomUniversite);
+        if (f != null && u != null) {
+            u.setFoyer(f);
+            return universiteRepository.save(u);
+        }
+        return null;
+    }
+
+    @Override
+    public Foyer ajouterFoyerEtAffecterAUniversite(Foyer foyer, long idUniversite) {
+        List<Bloc> blocs = foyer.getBlocs();
+        Foyer f = foyerRepository.save(foyer);
+        Universite u = universiteRepository.findById(idUniversite).orElse(null);
+        if (u != null) {
+            for (Bloc bloc : blocs) {
+                bloc.setFoyer(f);
+                blocRepository.save(bloc);
+            }
+            u.setFoyer(f);
+            universiteRepository.save(u);
+        }
+        return f;
+    }
+
+    @Override
+    public Foyer ajoutFoyerEtBlocs(Foyer foyer) {
+        List<Bloc> blocs = foyer.getBlocs();
+        Foyer f = foyerRepository.save(foyer);
+        for (Bloc b : blocs) {
+            b.setFoyer(f);
+            blocRepository.save(b);
+        }
+        return f;
+    }
+
+    @Override
+    public Universite affecterFoyerAUniversite(long idF, long idU) {
+        Universite u = universiteRepository.findById(idU).orElse(null);
+        Foyer f = foyerRepository.findById(idF).orElse(null);
+        if (u != null && f != null) {
+            u.setFoyer(f);
+            return universiteRepository.save(u);
+        }
+        return null;
+    }
+
+    @Override
+    public Universite desaffecterFoyerAUniversite(long idUniversite) {
+        Universite u = universiteRepository.findById(idUniversite).orElse(null);
+        if (u != null) {
+            u.setFoyer(null);
+            return universiteRepository.save(u);
+        }
+        return null;
+    }
 }
