@@ -21,6 +21,10 @@ public class Universite implements Serializable {
     String nomUniversite;
     String adresse;
     @OneToOne(cascade = CascadeType.ALL) //ajout, Modif et suppression
+    @JoinColumn(name = "foyer_id")
     Foyer foyer;
+
+
+
 
 }

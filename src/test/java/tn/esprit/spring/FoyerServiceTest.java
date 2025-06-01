@@ -81,7 +81,6 @@ public class FoyerServiceTest {
         assertNotNull(updatedU.getFoyer());
         assertEquals(result.getIdFoyer(), updatedU.getFoyer().getIdFoyer());
     }
-/*
     @AfterAll
     void cleanup() {
         if (foyerId != null) {
@@ -91,15 +90,13 @@ public class FoyerServiceTest {
             if (!blocs.isEmpty()) {
                 blocRepository.deleteAll(blocs);
             }
-            foyerRepository.deleteById(foyerId); // delete foyer after deleting blocs
+            foyerRepository.deleteById(foyerId);
         }
-
         if (universiteId != null) {
             universiteService.deleteById(universiteId);
         }
     }
 
-*/
     @Test
     void testInjection() {
         assertNotNull(universiteService, "universiteService is not injected!");
