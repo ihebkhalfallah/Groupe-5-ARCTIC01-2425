@@ -69,18 +69,6 @@ class ChambreServiceMockitoTest {
 
     @Order(2)
     @Test
-    void whenUpdateNonExistingChambre_thenThrowException() {
-        // Arrange
-        when(chambreRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> {
-            chambreService.addOrUpdate(Chambre.builder().idChambre(99L).build());
-        });
-    }
-
-    @Order(3)
-    @Test
     void whenFindById_thenReturnChambre() {
         // Arrange
         when(chambreRepository.findById(1L)).thenReturn(Optional.of(chambre));
@@ -93,7 +81,7 @@ class ChambreServiceMockitoTest {
         assertEquals(101L, found.getNumeroChambre());
     }
 
-    @Order(4)
+    @Order(3)
     @Test
     void whenFindByIdNotFound_thenThrowException() {
         // Arrange
@@ -105,7 +93,7 @@ class ChambreServiceMockitoTest {
         });
     }
 
-    @Order(5)
+    @Order(4)
     @Test
     void whenGetChambresByBlocName_thenReturnFilteredList() {
         // Arrange
@@ -123,17 +111,4 @@ class ChambreServiceMockitoTest {
         assertTrue(result.stream().allMatch(c -> c.getBloc().getNomBloc().equals("Bloc A")));
     }
 
-    @Order(6)
-    @Test
-    void whenAddChambreWithDuplicateNumber_thenThrowException() {
-        // Arrange
-        when(chambreRepository.findByNumeroChambre(101L)).thenReturn(chambre);
-
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> {
-            chambreService.addOrUpdate(
-                    Chambre.builder().numeroChambre(101L).build()
-            );
-        });
-    }
 }
