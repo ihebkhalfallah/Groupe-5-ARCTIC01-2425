@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    environment {
+        GITHUB_CREDENTIALS = credentials('e4668e34-2bcc-4f58-ac0b-8dfbe672e631')
+    }
+    stages {
+ /*       stage('Get code from Repo') {
+            steps {
+                git url: 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git',
+                        credentialsId: "${GITHUB_CREDENTIALS}",
+                        branch: 'RafikChambreBranch'
+            }
+        }*/
+        stage('Clean') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+        stage('Post Actions') {
+            steps {
+                echo 'Completed successfully!'
+            }
+        }
+    }
+}
