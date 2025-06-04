@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+environment {
+    DOCKER_HOST = 'unix:///mnt/wsl/docker-desktop/docker.sock'
+}
     triggers {
         // Déclenche la pipeline à chaque push sur la branche principale
         pollSCM('H/5 * * * *')
