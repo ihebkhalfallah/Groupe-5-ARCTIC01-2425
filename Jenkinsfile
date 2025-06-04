@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     triggers {
-        // Trigger the pipeline every 5 minutes (you might want to change this)
         pollSCM('H/5 * * * *')
     }
 
@@ -15,7 +14,8 @@ pipeline {
 
         stage('Clean') {
             steps {
-                sh 'rm -rf target/*'
+                // You can remove this and rely on mvn clean
+                sh 'rm -rf target/* || true'
             }
         }
 
@@ -50,23 +50,33 @@ pipeline {
 
         stage('Upload to Nexus') {
             steps {
-                nexusArtifactUploader(
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    nexusUrl: 'http://172.26.160.39:8081/',
-                    groupId: 'com.mycompany.app',
-                    version: '3.1.5',  // consider using readMavenPom().getVersion()
-                    repository: 'maven-releases',
-                    credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
-                    artifacts: [
-                        [
-                            artifactId: 'Foyer',
-                            classifier: '',
-                            file: 'target/Foyer-1.4.0-SNAPSHOT.jar',
-                            type: 'jar'
+                script {
+                    def pom = readMavenPom file: 'pom.xml'
+                    def version = pom.version
+                    def artifactId = pom.artifactId
+                    def groupId = pom.groupId
+                    def jarFile = "target/${artifactId}-${version}.jar"
+
+                    echo "Uploading artifact: ${jarFile}"
+
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: '172.26.160.39:8081',
+                        groupId: groupId,
+                        version: version,
+                        repository: 'maven-releases',
+                        credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
+                        artifacts: [
+                            [
+                                artifactId: artifactId,
+                                classifier: '',
+                                file: jarFile,
+                                type: 'jar'
+                            ]
                         ]
-                    ]
-                )
+                    )
+                }
             }
         }
     }
