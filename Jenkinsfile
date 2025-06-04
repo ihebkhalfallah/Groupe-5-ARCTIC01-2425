@@ -32,26 +32,25 @@ stage('Docker version') {
     sh 'docker version'
   }
 }
+stage('Start MySQL Container') {
+    steps {
+        sh '''
+            /usr/bin/docker rm -f mysql-container || true
+            /usr/bin/docker run --name mysql-container \
+                -e MYSQL_DATABASE=foyer \
+                -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+                -p 3306:3306 \
+                -d mysql:5.7
 
-        stage('Start MySQL Container') {
-            steps {
-                sh '''
-                    docker rm -f mysql-container || true
-                    docker run --name mysql-container \
-                        -e MYSQL_DATABASE=foyer \
-                        -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-                        -p 3306:3306 \
-                        -d mysql:5.7
+            echo "Waiting for MySQL to start..."
+            for i in {1..10}; do
+                /usr/bin/docker exec mysql-container mysqladmin ping --silent && break
+                sleep 5
+            done
+        '''
+    }
+}
 
-                    # Wait for MySQL to be ready
-                    echo "Waiting for MySQL to start..."
-                    for i in {1..10}; do
-                        docker exec mysql-container mysqladmin ping --silent && break
-                        sleep 5
-                    done
-                '''
-            }
-        }
 
         stage('Test') {
             steps {
@@ -68,11 +67,13 @@ stage('Docker version') {
         }
     }
 
-    post {
-        always {
-            echo 'Arrêt et suppression du conteneur MySQL...'
-            sh 'docker rm -f mysql-container || true'
-        }
+   post {
+       always {
+           echo 'Arrêt et suppression du conteneur MySQL...'
+           sh '/usr/bin/docker rm -f mysql-container || true'
+       }
+   }
+
         success {
             echo 'Pipeline terminée avec succès !'
         }
