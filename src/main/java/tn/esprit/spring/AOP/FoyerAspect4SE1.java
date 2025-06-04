@@ -12,12 +12,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class FoyerAspect4SE1 { // La classe : Aspect
 
-    // @After() ==> Après l'exécution
-    // @AfterThrowing() ==> Après le déclenchement d'une exception
-    // @AfterReturning() ==> Après la bonne exécution
-    // @Before() ==> Avant l'exécution
-    // @Around() ==> En // avec l'exécution
-
     @Before("execution(* tn.esprit.spring.Services..*.*(..))")
     public void hello(JoinPoint jp){ // La méthode : Advice
         log.info("Hello from "+jp.getSignature().getName());
@@ -27,15 +21,5 @@ public class FoyerAspect4SE1 { // La classe : Aspect
     public void bye(JoinPoint jp){ // La méthode : Advice
         log.info("Out of method "+jp.getSignature().getName());
     }
-/*
-    @Around("execution(* tn.esprit.spring.Services..*.*(..))")
-    public Object execution(ProceedingJoinPoint pjp) throws Throwable {
-        long start = System.currentTimeMillis();
-        Object obj = pjp.proceed();
-        long elapsedTime = System.currentTimeMillis() - start;
-        log.info("Method execution time: " + elapsedTime + " milliseconds.");
-        return obj;
-    }
 
- */
 }

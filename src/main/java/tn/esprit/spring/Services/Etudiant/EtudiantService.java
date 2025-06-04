@@ -59,20 +59,6 @@ public class EtudiantService implements IEtudiantService {
         repo.save(et);
     }
 
-    /*
-    @Override
-    public void desaffecterReservationAEtudiant
-            (String idR, String nomE, String prenomE) {
-        // ManyToMany: Reservation(Child) -- Etudiant(Parent)
-        // 1- Récupérer les objets
-        Reservation res= reservationRepository.findById(idR).get();
-        Etudiant et= repo.getByNomEtAndPrenomEt(nomE,prenomE);
-        // 2- Affectation: On desaffecte le child au parent
-        et.getReservations().remove(res);
-        // 3- Save du parent
-        repo.save(et);
-    }
-    */
 
 
     @Override

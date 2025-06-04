@@ -22,12 +22,14 @@ public class SpringDocConfig {
                 .contact(contactAPI());
     }
 
+  
     public Contact contactAPI() {
-        Contact contact = new Contact().name("Sirine NAIFAR")
-                .email("sirine.naifer@esprit.tn")
-                .url("https://www.linkedin.com/in/sirinenaifar/");
-        return contact;
+        return new Contact()
+                .name("Harb Mayssen")
+                .email("mayssen.HARB@esprit.tn")
+                .url("https://www.linkedin.com/in/mayssen-harb-4b1936236/");
     }
+
 
     @Bean
     public GroupedOpenApi allPublicApi() {
