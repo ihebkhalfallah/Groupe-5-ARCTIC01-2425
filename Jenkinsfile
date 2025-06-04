@@ -1,10 +1,6 @@
 pipeline {
     agent any
-   environment {
-        PROJECT_NAME = 'Foyer'
-        VERSION = '1.4.0-SNAPSHOT'
-        JAR_FILE = "target/${PROJECT_NAME}-${VERSION}.jar"
-    }
+
     triggers {
         // Trigger the pipeline every 5 minutes (you might want to change this)
         pollSCM('H/5 * * * *')
@@ -52,28 +48,27 @@ pipeline {
             }
         }
 
-       stage('Upload to Nexus') {
+        stage('Upload to Nexus') {
             steps {
                 nexusArtifactUploader(
                     nexusVersion: 'nexus3',
                     protocol: 'http',
-                    nexusUrl: 'my.nexus.address',           // Replace with your Nexus URL
-                    groupId: 'tn.esprit.spring',
-                    version: "${VERSION}",
-                    repository: 'RepositoryName',           // Replace with your Nexus repo name
-                    credentialsId: 'CredentialsId',         // Replace with your Jenkins credentials ID
+                    nexusUrl: 'http://172.26.160.39:8081/',
+                    groupId: 'com.mycompany.app',
+                    version: '3.1.5',  // consider using readMavenPom().getVersion()
+                    repository: 'maven-releases',
+                    credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
                     artifacts: [
                         [
-                            artifactId: "${PROJECT_NAME}",
+                            artifactId: 'Foyer',
                             classifier: '',
-                            file: "${JAR_FILE}",
+                            file: 'target/Foyer-1.4.0-SNAPSHOT.jar',
                             type: 'jar'
                         ]
                     ]
                 )
             }
         }
-    }
     }
 
     post {
