@@ -55,14 +55,14 @@ pipeline {
                     protocol: 'http',
                     nexusUrl: 'http://172.26.160.39:8081/',
                     groupId: 'com.mycompany.app',
-                    version: '1.0.0',  // consider using readMavenPom().getVersion()
+                    version: '3.1.5',  // consider using readMavenPom().getVersion()
                     repository: 'maven-releases',
                     credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
                     artifacts: [
                         [
-                            artifactId: 'my-service',
+                            artifactId: 'spring-boot-starter-parent',
                             classifier: '',
-                            file: 'target/my-service-1.0.0.jar',
+                            file: 'target/spring-boot-starter-parent.jar',
                             type: 'jar'
                         ]
                     ]
