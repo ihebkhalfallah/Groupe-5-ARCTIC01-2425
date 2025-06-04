@@ -103,9 +103,22 @@ public class FoyerServiceTest {
     }
 
     @Test
+
     void testAddUniversiteSimple() {
-        Universite u = Universite.builder().nomUniversite("X").adresse("Y").build();
+        // Arrange
+        Universite u = Universite.builder()
+                .nomUniversite("X")
+                .adresse("Y")
+                .build();
+
+        // Act
         Universite result = universiteService.addOrUpdate(u);
-        System.out.println("Résultat: " + result);
+
+        // Assert
+        assertNotNull(result, "Le résultat ne doit pas être nul.");
+        assertNotNull(result.getIdUniversite(), "L'université enregistrée doit avoir un ID.");
+        assertEquals("X", result.getNomUniversite(), "Le nom de l'université n'est pas correct.");
+        assertEquals("Y", result.getAdresse(), "L'adresse de l'université n'est pas correcte.");
     }
+
 }
