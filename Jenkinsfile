@@ -24,6 +24,11 @@ pipeline {
                 sh 'mvn clean compile'
             }
         }
+stage('Docker version') {
+  steps {
+    sh 'docker version'
+  }
+}
 
         stage('Start MySQL Container') {
             steps {
