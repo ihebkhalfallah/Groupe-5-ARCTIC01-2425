@@ -49,26 +49,35 @@ pipeline {
         }
 
         stage('Upload to Nexus') {
-            steps {
-                nexusArtifactUploader(
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    nexusUrl: 'http://172.26.160.39:8081/',
-                    groupId: 'com.mycompany.app',
-                    version: '3.1.5',  // consider using readMavenPom().getVersion()
-                    repository: 'maven-releases',
-                    credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
-                    artifacts: [
-                        [
-                            artifactId: 'spring-boot-starter-parent',
-                            classifier: '',
-                            file: 'target/spring-boot-starter-parent.jar',
-                            type: 'jar'
-                        ]
-                    ]
-                )
-            }
-        }
+                   steps {
+                       script {
+                           def pom = readMavenPom file: 'pom.xml'
+                           def artifactId = pom.artifactId
+                           def version = pom.version
+                           def groupId = pom.groupId
+                           def jarFile = "target/${artifactId}-${version}.jar"
+
+                           nexusArtifactUploader(
+                               nexusVersion: 'nexus3',
+                               protocol: 'http',
+                               nexusUrl: 'http://172.26.160.39:8081/',
+                               groupId: groupId,
+                               version: version,
+                               repository: version.endsWith('-SNAPSHOT') ? 'maven-snapshots' : 'maven-releases',
+                               credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
+                               artifacts: [
+                                   [
+                                       artifactId: artifactId,
+                                       classifier: '',
+                                       file: jarFile,
+                                       type: 'jar'
+                                   ]
+                               ]
+                           )
+                       }
+                   }
+               }
+
     }
 
     post {
