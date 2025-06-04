@@ -19,38 +19,38 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class ChambreService implements IChambreService {
-
     private final ChambreRepository chambreRepository;
-    private final BlocRepository blocRepository;
+    ChambreRepository repo;
+    BlocRepository blocRepository;
 
     @Override
     public Chambre addOrUpdate(Chambre c) {
-        return chambreRepository.save(c);
+        return repo.save(c);
     }
 
     @Override
     public List<Chambre> findAll() {
-        return chambreRepository.findAll();
+        return repo.findAll();
     }
 
     @Override
     public Chambre findById(long id) {
-        return chambreRepository.findById(id).orElse(null);
+        return repo.findById(id).get();
     }
 
     @Override
     public void deleteById(long id) {
-        chambreRepository.deleteById(id);
+        repo.deleteById(id);
     }
 
     @Override
     public void delete(Chambre c) {
-        chambreRepository.delete(c);
+        repo.delete(c);
     }
 
     @Override
     public List<Chambre> getChambresParNomBloc(String nomBloc) {
-        return chambreRepository.findByBlocNomBloc(nomBloc);
+        return repo.findByBlocNomBloc(nomBloc);
     }
 
     @Override
@@ -58,11 +58,13 @@ public class ChambreService implements IChambreService {
         long compteur = 0;
         List<Chambre> list = chambreRepository.findAll();
         for (Chambre chambre : list) {
-            if (chambre.getBloc().getIdBloc() == idBloc && chambre.getTypeC().equals(type)) {
+            if (chambre.getBloc().getIdBloc() == idBloc
+                    && chambre.getTypeC().equals(type)) {
                 compteur++;
             }
         }
         return compteur;
+        //return repo.countByTypeCAndBlocIdBloc(type, idBloc);
     }
 
     @Override
@@ -128,11 +130,13 @@ public class ChambreService implements IChambreService {
     @Scheduled(cron = "0 * * * * *")
     public void listeChambresParBloc() {
         for (Bloc b : blocRepository.findAll()) {
-            log.info("Bloc => " + b.getNomBloc() + " ayant une capacité " + b.getCapaciteBloc());
-            if (!b.getChambres().isEmpty()) {
-                log.info("La liste des chambres pour ce bloc:");
+            log.info("Bloc => " + b.getNomBloc() +
+                    " ayant une capacité " + b.getCapaciteBloc());
+            if (b.getChambres().size() != 0) {
+                log.info("La liste des chambres pour ce bloc: ");
                 for (Chambre c : b.getChambres()) {
-                    log.info("NumChambre: " + c.getNumeroChambre() + " type: " + c.getTypeC());
+                    log.info("NumChambre: " + c.getNumeroChambre() +
+                            " type: " + c.getTypeC());
                 }
             } else {
                 log.info("Pas de chambre disponible dans ce bloc");
@@ -143,54 +147,78 @@ public class ChambreService implements IChambreService {
 
     @Override
     public void pourcentageChambreParTypeChambre() {
-        long totalChambre = chambreRepository.count();
-        if (totalChambre == 0) {
-            log.warn("Aucune chambre enregistrée.");
-            return;
-        }
-        double pSimple = (double) chambreRepository.countChambreByTypeC(TypeChambre.SIMPLE) * 100 / totalChambre;
-        double pDouble = (double) chambreRepository.countChambreByTypeC(TypeChambre.DOUBLE) * 100 / totalChambre;
-        double pTriple = (double) chambreRepository.countChambreByTypeC(TypeChambre.TRIPLE) * 100 / totalChambre;
+        long totalChambre = repo.count();
+        double pSimple = (double) (repo.countChambreByTypeC(TypeChambre.SIMPLE) * 100) / totalChambre;
+        double pDouble = (double) (repo.countChambreByTypeC(TypeChambre.DOUBLE) * 100) / totalChambre;
+        double pTriple = (double) (repo.countChambreByTypeC(TypeChambre.TRIPLE) * 100) / totalChambre;
+        log.info("Nombre total des chambre: " + totalChambre);
+        log.info("Le pourcentage des chambres pour le type SIMPLE est égale à " + pSimple);
+        log.info("Le pourcentage des chambres pour le type DOUBLE est égale à " + pDouble);
+        log.info("Le pourcentage des chambres pour le type TRIPLE est égale à " + pTriple);
 
-        log.info("Nombre total des chambres: " + totalChambre);
-        log.info("Pourcentage SIMPLE: " + pSimple + "%");
-        log.info("Pourcentage DOUBLE: " + pDouble + "%");
-        log.info("Pourcentage TRIPLE: " + pTriple + "%");
     }
 
     @Override
     public void nbPlacesDisponibleParChambreAnneeEnCours() {
+        // Début "récuperer l'année universitaire actuelle"
         LocalDate dateDebutAU;
         LocalDate dateFinAU;
+        int numReservation;
         int year = LocalDate.now().getYear() % 100;
-
         if (LocalDate.now().getMonthValue() <= 7) {
-            dateDebutAU = LocalDate.of(2000 + (year - 1), 9, 15);
-            dateFinAU = LocalDate.of(2000 + year, 6, 30);
+            dateDebutAU = LocalDate.of(Integer.parseInt("20" + (year - 1)), 9, 15);
+            dateFinAU = LocalDate.of(Integer.parseInt("20" + year), 6, 30);
         } else {
-            dateDebutAU = LocalDate.of(2000 + year, 9, 15);
-            dateFinAU = LocalDate.of(2000 + (year + 1), 6, 30);
+            dateDebutAU = LocalDate.of(Integer.parseInt("20" + year), 9, 15);
+            dateFinAU = LocalDate.of(Integer.parseInt("20" + (year + 1)), 6, 30);
         }
-
+        // Fin "récuperer l'année universitaire actuelle"
+        for (Chambre c : repo.findAll()) {
+            long nbReservation = repo.countReservationsByIdChambreAndReservationsEstValideAndReservationsAnneeUniversitaireBetween(c.getIdChambre()
+                    , true, dateDebutAU, dateFinAU);
+            switch (c.getTypeC()) {
+                case SIMPLE:
+                    if (nbReservation == 0) {
+                        log.info("Le nombre de place disponible pour la chambre " + c.getTypeC() + " " + c.getNumeroChambre() + " est 1 ");
+                    } else {
+                        log.info("La chambre " + c.getTypeC() + " " + c.getNumeroChambre() + " est complete");
+                    }
+                    break;
+                case DOUBLE:
+                    if (nbReservation < 2) {
+                        log.info("Le nombre de place disponible pour la chambre " + c.getTypeC() + " " + c.getNumeroChambre() + " est " + (2 - nbReservation));
+                    } else {
+                        log.info("La chambre " + c.getTypeC() + " " + c.getNumeroChambre() + " est complete");
+                    }
+                    break;
+                case TRIPLE:
+                    if (nbReservation < 3) {
+                        log.info("Le nombre de place disponible pour la chambre " + c.getTypeC() + " " + c.getNumeroChambre() + " est " + (3 - nbReservation));
+                    } else {
+                        log.info("La chambre " + c.getTypeC() + " " + c.getNumeroChambre() + " est complete");
+                    }
+            }
+        }
+    }
 
     @Override
     public List<Chambre> getChambresParNomBlocJava(String nomBloc) {
-        Bloc bloc = blocRepository.findByNomBloc(nomBloc);
-        return bloc != null ? bloc.getChambres() : new ArrayList<>();
+        Bloc b = blocRepository.findByNomBloc(nomBloc);
+        return b.getChambres();
     }
 
     @Override
     public List<Chambre> getChambresParNomBlocKeyWord(String nomBloc) {
-        return chambreRepository.findByBlocNomBloc(nomBloc);
+        return repo.findByBlocNomBloc(nomBloc);
     }
 
     @Override
     public List<Chambre> getChambresParNomBlocJPQL(String nomBloc) {
-        return chambreRepository.getChambresParNomBlocJPQL(nomBloc);
+        return repo.getChambresParNomBlocJPQL(nomBloc);
     }
 
     @Override
     public List<Chambre> getChambresParNomBlocSQL(String nomBloc) {
-        return chambreRepository.getChambresParNomBlocSQL(nomBloc);
+        return repo.getChambresParNomBlocSQL(nomBloc);
     }
 }
