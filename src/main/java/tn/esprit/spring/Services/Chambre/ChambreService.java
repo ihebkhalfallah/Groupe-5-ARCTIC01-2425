@@ -35,7 +35,7 @@ public class ChambreService implements IChambreService {
 
     @Override
     public Chambre findById(long id) {
-        return repo.findById(id).get();
+        return repo.findById(id).orElse(null);
     }
 
     @Override
@@ -64,7 +64,6 @@ public class ChambreService implements IChambreService {
             }
         }
         return compteur;
-        //return repo.countByTypeCAndBlocIdBloc(type, idBloc);
     }
 
     @Override
@@ -115,7 +114,7 @@ public class ChambreService implements IChambreService {
         for (Bloc b : blocRepository.findAll()) {
             log.info("Bloc => " + b.getNomBloc() +
                     " ayant une capacité " + b.getCapaciteBloc());
-            if (b.getChambres().size() != 0) {
+            if (!b.getChambres().isEmpty()) {
                 log.info("La liste des chambres pour ce bloc: ");
                 for (Chambre c : b.getChambres()) {
                     log.info("NumChambre: " + c.getNumeroChambre() +
@@ -146,7 +145,6 @@ public class ChambreService implements IChambreService {
         // Début "récuperer l'année universitaire actuelle"
         LocalDate dateDebutAU;
         LocalDate dateFinAU;
-        int numReservation;
         int year = LocalDate.now().getYear() % 100;
         if (LocalDate.now().getMonthValue() <= 7) {
             dateDebutAU = LocalDate.of(Integer.parseInt("20" + (year - 1)), 9, 15);
