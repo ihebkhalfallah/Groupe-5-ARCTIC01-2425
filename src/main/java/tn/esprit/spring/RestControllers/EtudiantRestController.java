@@ -14,22 +14,22 @@ public class EtudiantRestController {
     IEtudiantService service;
 
     @PostMapping("addOrUpdate")
-    Etudiant addOrUpdate(@RequestBody Etudiant e) {
+    public Etudiant addOrUpdate(@RequestBody Etudiant e) {
         return service.addOrUpdate(e);
     }
 
     @GetMapping("findAll")
-    List<Etudiant> findAll() {
+    public List<Etudiant> findAll() {
         return service.findAll();
     }
 
     @GetMapping("findById")
-    Etudiant findById(@RequestParam long id) {
+    public Etudiant findById(@RequestParam long id) {
         return service.findById(id);
     }
 
     @DeleteMapping("delete")
-    void delete(@RequestBody Etudiant e) {
+    public void delete(@RequestBody Etudiant e) {
         service.delete(e);
     }
 
@@ -39,7 +39,7 @@ public class EtudiantRestController {
     }
 
     @GetMapping("selectJPQL")
-    List<Etudiant> selectJPQL(@RequestParam String nom){
+    public List<Etudiant> selectJPQL(@RequestParam String nom){
         return service.selectJPQL(nom);
     }
 }
