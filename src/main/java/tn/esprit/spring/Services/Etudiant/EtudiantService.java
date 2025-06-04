@@ -8,6 +8,7 @@ import tn.esprit.spring.DAO.Repositories.EtudiantRepository;
 import tn.esprit.spring.DAO.Repositories.ReservationRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -57,6 +58,8 @@ public class EtudiantService implements IEtudiantService {
         // 3- Save du parent
         repo.save(et);
     }
+
+    /*
     @Override
     public void desaffecterReservationAEtudiant
             (String idR, String nomE, String prenomE) {
@@ -69,4 +72,29 @@ public class EtudiantService implements IEtudiantService {
         // 3- Save du parent
         repo.save(et);
     }
+    */
+
+
+    @Override
+    public void desaffecterReservationAEtudiant(String idR, String nomE, String prenomE) {
+        // ManyToMany: Reservation(Child) -- Etudiant(Parent)
+
+        // 1- Récupérer les objets de façon sécurisée
+        Optional<Reservation> optionalRes = reservationRepository.findById(idR);
+        Etudiant et = repo.getByNomEtAndPrenomEt(nomE, prenomE);
+
+        if (optionalRes.isPresent() && et != null) {
+            Reservation res = optionalRes.get();
+
+            // 2- Désaffectation : On enlève la réservation de la liste de l'étudiant
+            et.getReservations().remove(res);
+
+            // 3- Sauvegarde du parent
+            repo.save(et);
+        } else {
+            System.out.println("Réservation ou étudiant introuvable");
+        }
+    }
+
+
 }
