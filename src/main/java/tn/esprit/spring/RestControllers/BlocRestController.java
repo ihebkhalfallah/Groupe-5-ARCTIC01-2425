@@ -30,7 +30,7 @@ public class BlocRestController {
     }
 
     @DeleteMapping("delete")
-    void delete(@RequestBody Bloc b) {
+    public void delete(@RequestBody Bloc b) {
         service.delete(b);
     }
 
@@ -40,7 +40,7 @@ public class BlocRestController {
     }
 
     @PutMapping("affecterChambresABloc")
-    Bloc affecterChambresABloc(@RequestBody List<Long> numChambre, @RequestParam String nomBloc) {
+    public Bloc affecterChambresABloc(@RequestBody List<Long> numChambre, @RequestParam String nomBloc) {
         return service.affecterChambresABloc(numChambre, nomBloc);
     }
     // ...............?nomFoyer=....&nomBloc=....
@@ -51,7 +51,7 @@ public class BlocRestController {
 
     // .............../Foyer des jasmins/Bloc G
     @PutMapping("affecterBlocAFoyer2/{nomFoyer}/{nomBloc}")
-    Bloc affecterBlocAFoyer2(@PathVariable String nomBloc, @PathVariable String nomFoyer) {
+    public Bloc affecterBlocAFoyer2(@PathVariable String nomBloc, @PathVariable String nomFoyer) {
         return service.affecterBlocAFoyer(nomBloc, nomFoyer);
     }
 

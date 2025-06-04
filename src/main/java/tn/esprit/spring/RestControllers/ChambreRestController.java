@@ -15,27 +15,27 @@ public class ChambreRestController {
     IChambreService service;
 
     @PostMapping("addOrUpdate")
-    Chambre addOrUpdate(@RequestBody Chambre c) {
+    public Chambre addOrUpdate(@RequestBody Chambre c) {
         return service.addOrUpdate(c);
     }
 
     @GetMapping("findAll")
-    List<Chambre> findAll() {
+   public  List<Chambre> findAll() {
         return service.findAll();
     }
 
     @GetMapping("findById")
-    Chambre findById(@RequestParam long id) {
+    public Chambre findById(@RequestParam long id) {
         return service.findById(id);
     }
 
     @DeleteMapping("delete")
-    void delete(@RequestBody Chambre c) {
+    public void delete(@RequestBody Chambre c) {
         service.delete(c);
     }
 
     @DeleteMapping("deleteById")
-    void deleteById(@RequestParam long id) {
+   public  void deleteById(@RequestParam long id) {
         service.deleteById(id);
     }
 
@@ -45,12 +45,12 @@ public class ChambreRestController {
     }
 
     @GetMapping("nbChambreParTypeEtBloc")
-    long nbChambreParTypeEtBloc(@RequestParam TypeChambre type, @RequestParam long idBloc) {
+   public  long nbChambreParTypeEtBloc(@RequestParam TypeChambre type, @RequestParam long idBloc) {
         return service.nbChambreParTypeEtBloc(type, idBloc);
     }
 
     @GetMapping("getChambresNonReserveParNomFoyerEtTypeChambre")
-    List<Chambre> getChambresNonReserveParNomFoyerEtTypeChambre(@RequestParam String nomFoyer,@RequestParam TypeChambre type){
+    public List<Chambre> getChambresNonReserveParNomFoyerEtTypeChambre(@RequestParam String nomFoyer,@RequestParam TypeChambre type){
         return service.getChambresNonReserveParNomFoyerEtTypeChambre(nomFoyer,type);
     }
 }
