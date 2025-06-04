@@ -27,8 +27,9 @@ public class Chambre implements Serializable {
     TypeChambre typeC;
     @ManyToOne(cascade = CascadeType.ALL)
     @JsonIgnore
-    Bloc bloc;
+    @Transient // JPA : ne le mappe pas
+    transient Bloc bloc;
     @OneToMany
-    List<Reservation> reservations= new ArrayList<>();
+    private List<Reservation> reservations= new ArrayList<>();
 
 }
