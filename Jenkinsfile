@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    environment {
+        SONARQUBE_SERVER = 'http://172.26.160.39/:9000/'
+        SONAR_TOKEN ='3f503a6dd7d75937d89375265c03df9e2478fabc'
+    }
     triggers {
         // Déclenche la pipeline à chaque push sur la branche principale
         pollSCM('H/5 * * * *')
@@ -39,15 +42,12 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube analysis') {
             steps {
-                // Ici, 'SonarQubeServer' doit correspondre au nom donné dans la config Jenkins > Manage Jenkins > Configure System > SonarQube servers
-                withSonarQubeEnv('SonarQubeServer') {
-                    sh 'mvn sonar:sonar'
-                }
+                echo "Code analysis"
+                sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
             }
         }
-    }
 
     post {
         success {
