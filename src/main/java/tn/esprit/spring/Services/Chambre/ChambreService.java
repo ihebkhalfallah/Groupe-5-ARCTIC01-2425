@@ -67,37 +67,63 @@ public class ChambreService implements IChambreService {
 
     @Override
     public List<Chambre> getChambresNonReserveParNomFoyerEtTypeChambre(String nomFoyer, TypeChambre type) {
-        LocalDate dateDebutAU;
-        LocalDate dateFinAU;
-        int year = LocalDate.now().getYear() % 100;
-
-        if (LocalDate.now().getMonthValue() <= 7) {
-            dateDebutAU = LocalDate.of(2000 + (year - 1), 9, 15);
-            dateFinAU = LocalDate.of(2000 + year, 6, 30);
-        } else {
-            dateDebutAU = LocalDate.of(2000 + year, 9, 15);
-            dateFinAU = LocalDate.of(2000 + (year + 1), 6, 30);
-        }
+        LocalDate dateDebutAU = calculerDateDebutAnneeUniversitaire();
+        LocalDate dateFinAU = calculerDateFinAnneeUniversitaire();
 
         List<Chambre> listChambreDispo = new ArrayList<>();
-        for (Chambre c : chambreRepository.findAll()) {
-            if (c.getTypeC().equals(type) && c.getBloc().getFoyer().getNomFoyer().equals(nomFoyer)) {
-                int numReservation = 0;
-                for (Reservation reservation : c.getReservations()) {
-                    if (reservation.getAnneeUniversitaire().isAfter(dateDebutAU)
-                            && reservation.getAnneeUniversitaire().isBefore(dateFinAU)) {
-                        numReservation++;
-                    }
-                }
-                if ((type == TypeChambre.SIMPLE && numReservation == 0)
-                        || (type == TypeChambre.DOUBLE && numReservation < 2)
-                        || (type == TypeChambre.TRIPLE && numReservation < 3)) {
-                    listChambreDispo.add(c);
+
+        for (Chambre chambre : chambreRepository.findAll()) {
+            if (estChambreCorrespondante(chambre, nomFoyer, type)) {
+                int nombreReservations = compterReservationsDansAnneeUniversitaire(chambre, dateDebutAU, dateFinAU);
+                if (estChambreDisponible(nombreReservations, type)) {
+                    listChambreDispo.add(chambre);
                 }
             }
         }
+
         return listChambreDispo;
     }
+
+    private LocalDate calculerDateDebutAnneeUniversitaire() {
+        int year = LocalDate.now().getYear() % 100;
+        if (LocalDate.now().getMonthValue() <= 7) {
+            return LocalDate.of(2000 + (year - 1), 9, 15);
+        } else {
+            return LocalDate.of(2000 + year, 9, 15);
+        }
+    }
+
+    private LocalDate calculerDateFinAnneeUniversitaire() {
+        int year = LocalDate.now().getYear() % 100;
+        if (LocalDate.now().getMonthValue() <= 7) {
+            return LocalDate.of(2000 + year, 6, 30);
+        } else {
+            return LocalDate.of(2000 + (year + 1), 6, 30);
+        }
+    }
+
+    private boolean estChambreCorrespondante(Chambre chambre, String nomFoyer, TypeChambre type) {
+        return chambre.getTypeC().equals(type)
+                && chambre.getBloc().getFoyer().getNomFoyer().equals(nomFoyer);
+    }
+
+    private int compterReservationsDansAnneeUniversitaire(Chambre chambre, LocalDate debut, LocalDate fin) {
+        int count = 0;
+        for (Reservation reservation : chambre.getReservations()) {
+            if (reservation.getAnneeUniversitaire().isAfter(debut)
+                    && reservation.getAnneeUniversitaire().isBefore(fin)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private boolean estChambreDisponible(int nombreReservations, TypeChambre type) {
+        return (type == TypeChambre.SIMPLE && nombreReservations == 0)
+                || (type == TypeChambre.DOUBLE && nombreReservations < 2)
+                || (type == TypeChambre.TRIPLE && nombreReservations < 3);
+    }
+
 
     @Scheduled(cron = "0 * * * * *")
     public void listeChambresParBloc() {
@@ -146,24 +172,6 @@ public class ChambreService implements IChambreService {
             dateFinAU = LocalDate.of(2000 + (year + 1), 6, 30);
         }
 
-        for (Chambre c : chambreRepository.findAll()) {
-            long nbReservation = chambreRepository.countReservationsByIdChambreAndReservationsEstValideAndReservationsAnneeUniversitaireBetween(
-                    c.getIdChambre(), true, dateDebutAU, dateFinAU
-            );
-            int placesTotal = switch (c.getTypeC()) {
-                case SIMPLE -> 1;
-                case DOUBLE -> 2;
-                case TRIPLE -> 3;
-            };
-            long placesDispo = placesTotal - nbReservation;
-
-            if (placesDispo > 0) {
-                log.info("Chambre " + c.getNumeroChambre() + " (" + c.getTypeC() + "): " + placesDispo + " place(s) disponible(s)");
-            } else {
-                log.info("Chambre " + c.getNumeroChambre() + " (" + c.getTypeC() + ") est complète");
-            }
-        }
-    }
 
     @Override
     public List<Chambre> getChambresParNomBlocJava(String nomBloc) {
