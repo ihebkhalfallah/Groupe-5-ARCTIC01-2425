@@ -2,26 +2,43 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_CREDENTIALS = credentials('e4668e34-2bcc-4f58-ac0b-8dfbe672e631')
+        GITHUB_CREDENTIALS = credentials('github-token')
     }
+
     stages {
- /*       stage('Get code from Repo') {
+        stage('Get code from Repo') {
             steps {
                 git url: 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git',
                         credentialsId: "${GITHUB_CREDENTIALS}",
                         branch: 'RafikChambreBranch'
             }
-        }*/
+        }
+
         stage('Clean') {
             steps {
                 sh 'mvn clean'
             }
         }
+
         stage('Build') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn compile'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=Foyer \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
+                }
+            }
+        }
+
         stage('Post Actions') {
             steps {
                 echo 'Completed successfully!'
