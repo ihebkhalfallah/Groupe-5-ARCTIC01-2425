@@ -15,17 +15,17 @@ public class BlocRestController {
     IBlocService service;
 
     @PostMapping("addOrUpdate")
-    Bloc addOrUpdate(@RequestBody Bloc b) {
+    public Bloc addOrUpdate(@RequestBody Bloc b) {
         return service.addOrUpdate(b);
     }
 
     @GetMapping("findAll")
-    List<Bloc> findAll() {
+    public List<Bloc> findAll() {
         return service.findAll();
     }
 
     @GetMapping("findById")
-    Bloc findById(@RequestParam long id) {
+   public  Bloc findById(@RequestParam long id) {
         return service.findById(id);
     }
 
@@ -35,7 +35,7 @@ public class BlocRestController {
     }
 
     @DeleteMapping("deleteById")
-    void deleteById(@RequestParam long id) {
+    public void deleteById(@RequestParam long id) {
         service.deleteById(id);
     }
 
@@ -45,7 +45,7 @@ public class BlocRestController {
     }
     // ...............?nomFoyer=....&nomBloc=....
     @PutMapping("affecterBlocAFoyer")
-    Bloc affecterBlocAFoyer(@RequestParam String nomBloc, @RequestParam String nomFoyer) {
+    public Bloc affecterBlocAFoyer(@RequestParam String nomBloc, @RequestParam String nomFoyer) {
         return service.affecterBlocAFoyer(nomBloc, nomFoyer);
     }
 
@@ -56,12 +56,12 @@ public class BlocRestController {
     }
 
     @PostMapping("ajouterBlocEtSesChambres")
-    Bloc ajouterBlocEtSesChambres(@RequestBody Bloc b) {
+    public Bloc ajouterBlocEtSesChambres(@RequestBody Bloc b) {
         return service.ajouterBlocEtSesChambres(b);
     }
 
     @PostMapping("ajouterBlocEtAffecterAFoyer/{nomF}")
-    Bloc ajouterBlocEtAffecterAFoyer(@RequestBody Bloc b,@PathVariable String nomF) {
+    public Bloc ajouterBlocEtAffecterAFoyer(@RequestBody Bloc b,@PathVariable String nomF) {
         return service.ajouterBlocEtAffecterAFoyer(b,nomF);
     }
 }
