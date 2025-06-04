@@ -1,8 +1,5 @@
 pipeline {
     agent any
-environment {
-    DOCKER_HOST = 'unix:///var/run/docker.sock'
-}
 
     triggers {
         // Déclenche la pipeline à chaque push sur la branche principale
@@ -27,30 +24,6 @@ environment {
                 sh 'mvn clean compile'
             }
         }
-stage('Docker version') {
-  steps {
-    sh 'docker version'
-  }
-}
-stage('Start MySQL Container') {
-    steps {
-        sh '''
-            /usr/bin/docker rm -f mysql-container || true
-            /usr/bin/docker run --name mysql-container \
-                -e MYSQL_DATABASE=foyer \
-                -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-                -p 3306:3306 \
-                -d mysql:5.7
-
-            echo "Waiting for MySQL to start..."
-            for i in {1..10}; do
-                /usr/bin/docker exec mysql-container mysqladmin ping --silent && break
-                sleep 5
-            done
-        '''
-    }
-}
-
 
         stage('Test') {
             steps {
@@ -59,21 +32,15 @@ stage('Start MySQL Container') {
             }
         }
 
-        stage('Package') {
-            steps {
-                // Création du livrable (ex: jar, war...)
-                sh 'mvn package -DskipTests'
-            }
-        }
+         stage('Package') {
+                   steps {
+                       // Création du livrable (ex: jar, war...)
+                       sh 'mvn package  -DskipTests'
+                   }
+               }
     }
 
-   post {
-       always {
-           echo 'Arrêt et suppression du conteneur MySQL...'
-           sh '/usr/bin/docker rm -f mysql-container || true'
-       }
-   }
-
+    post {
         success {
             echo 'Pipeline terminée avec succès !'
         }
