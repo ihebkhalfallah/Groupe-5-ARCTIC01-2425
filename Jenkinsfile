@@ -25,6 +25,26 @@ pipeline {
             }
         }
 
+        stage('Start MySQL Container') {
+            steps {
+                sh '''
+                    docker rm -f mysql-container || true
+                    docker run --name mysql-container \
+                        -e MYSQL_DATABASE=foyer \
+                        -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+                        -p 3306:3306 \
+                        -d mysql:5.7
+
+                    # Wait for MySQL to be ready
+                    echo "Waiting for MySQL to start..."
+                    for i in {1..10}; do
+                        docker exec mysql-container mysqladmin ping --silent && break
+                        sleep 5
+                    done
+                '''
+            }
+        }
+
         stage('Test') {
             steps {
                 // Exécution des tests unitaires (Mockito, JUnit, etc.)
@@ -32,15 +52,19 @@ pipeline {
             }
         }
 
-         stage('Package') {
-                   steps {
-                       // Création du livrable (ex: jar, war...)
-                       sh 'mvn package  -DskipTests'
-                   }
-               }
+        stage('Package') {
+            steps {
+                // Création du livrable (ex: jar, war...)
+                sh 'mvn package -DskipTests'
+            }
+        }
     }
 
     post {
+        always {
+            echo 'Arrêt et suppression du conteneur MySQL...'
+            sh 'docker rm -f mysql-container || true'
+        }
         success {
             echo 'Pipeline terminée avec succès !'
         }
