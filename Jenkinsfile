@@ -32,12 +32,21 @@ pipeline {
             }
         }
 
-         stage('Package') {
-                   steps {
-                       // Création du livrable (ex: jar, war...)
-                       sh 'mvn package  -DskipTests'
-                   }
-               }
+        stage('Package') {
+            steps {
+                // Création du livrable (ex: jar, war...)
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                // Ici, 'SonarQubeServer' doit correspondre au nom donné dans la config Jenkins > Manage Jenkins > Configure System > SonarQube servers
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
     }
 
     post {
