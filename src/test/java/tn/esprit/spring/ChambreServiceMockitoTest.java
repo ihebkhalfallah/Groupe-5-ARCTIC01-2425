@@ -13,7 +13,6 @@ import tn.esprit.spring.DAO.Entities.TypeChambre;
 import tn.esprit.spring.DAO.Repositories.BlocRepository;
 import tn.esprit.spring.DAO.Repositories.ChambreRepository;
 import tn.esprit.spring.Services.Chambre.ChambreService;
-import tn.esprit.spring.Services.Chambre.IChambreService;
 
 import java.util.Arrays;
 import java.util.List;

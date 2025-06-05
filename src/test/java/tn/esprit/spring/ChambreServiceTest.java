@@ -1,13 +1,10 @@
 package tn.esprit.spring;
 
 import org.junit.jupiter.api.*;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import tn.esprit.spring.DAO.Entities.Chambre;
 import tn.esprit.spring.DAO.Entities.TypeChambre;
-import tn.esprit.spring.Services.Chambre.ChambreService;
 import tn.esprit.spring.Services.Chambre.IChambreService;
 
 @SpringBootTest
