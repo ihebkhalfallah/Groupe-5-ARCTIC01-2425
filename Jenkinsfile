@@ -1,20 +1,29 @@
 pipeline {
     agent any
 
+    environment {
+        GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
+        BRANCH = 'mayssen-foyer'
+        GIT_CREDENTIALS_ID = 'jenkins-pipeline'
+        SONARQUBE_SERVER = 'http://172.26.160.39:9000/'
+        SONAR_TOKEN = credentials('3f503a6dd7d75937d89375265c03df9e2478fabc')
+        DOCKERHUB_CREDENTIALS = 'jenkins'
+    }
+
     triggers {
         pollSCM('H/5 * * * *')
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone repository') {
             steps {
-                checkout scm
+                echo "Cloning branch '${BRANCH}' from '${GIT_REPO}'"
+                git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
         stage('Clean') {
             steps {
-                // You can remove this and rely on mvn clean
                 sh 'rm -rf target/* || true'
             }
         }
@@ -33,17 +42,18 @@ pipeline {
 
         stage('SonarQube analysis') {
             steps {
-                echo "Code analysis"
-                sh '''
+                echo "Running SonarQube analysis"
+                sh """
                     mvn sonar:sonar \
-                      -Dsonar.host.url=http://172.26.160.39:9000 \
-                      -Dsonar.login=3f503a6dd7d75937d89375265c03df9e2478fabc
-                '''
+                      -Dsonar.host.url=${SONARQUBE_SERVER} \
+                      -Dsonar.login=${SONAR_TOKEN}
+                """
             }
         }
 
-        stage('Package') {
+        stage('Build JAR') {
             steps {
+                echo "Packaging the application (build JAR)..."
                 sh 'mvn package -DskipTests'
             }
         }
@@ -79,15 +89,14 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
         success {
-            echo 'Pipeline terminée avec succès !'
+            echo '✅ Pipeline terminée avec succès !'
         }
         failure {
-            echo 'La pipeline a échoué.'
+            echo '❌ La pipeline a échoué.'
         }
     }
 }
