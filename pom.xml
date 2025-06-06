@@ -13,7 +13,7 @@
 
     <groupId>tn.esprit.spring</groupId>
     <artifactId>Foyer</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.1</version>
     <name>Foyer</name>
     <description>Foyer</description>
 
@@ -25,10 +25,10 @@
     <distributionManagement>
         <snapshotRepository>
             <id>nexus-snapshots</id>
+            <name>Nexus Snapshot Repository</name>
             <url>http://172.26.160.39:8081/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
-
 
 
     <dependencies>
