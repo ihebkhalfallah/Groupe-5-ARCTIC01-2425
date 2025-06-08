@@ -53,7 +53,7 @@ public class BlocService implements IBlocService {
 
     @Override
     public void deleteById(long id) {
-        Bloc b =repo.findById(id).get();
+        Bloc b = repo.findById(id).get();
         chambreRepository.deleteAll(b.getChambres());
         repo.delete(b);
     }
@@ -106,11 +106,10 @@ public class BlocService implements IBlocService {
     @Override
     public Bloc ajouterBlocEtAffecterAFoyer(Bloc b, String nomFoyer) {
         // Foyer: child , Bloc: Parent
-        Foyer f= foyerRepository.findByNomFoyer(nomFoyer);
+        Foyer f = foyerRepository.findByNomFoyer(nomFoyer);
         b.setFoyer(f);
         return blocRepository.save(b);
     }
-
 
 
 }

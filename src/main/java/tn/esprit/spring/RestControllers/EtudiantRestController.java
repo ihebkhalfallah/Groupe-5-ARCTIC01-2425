@@ -39,7 +39,7 @@ public class EtudiantRestController {
     }
 
     @GetMapping("selectJPQL")
-    List<Etudiant> selectJPQL(@RequestParam String nom){
+    List<Etudiant> selectJPQL(@RequestParam String nom) {
         return service.selectJPQL(nom);
     }
 }

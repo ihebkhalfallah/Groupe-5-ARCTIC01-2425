@@ -16,8 +16,7 @@ public class UniversiteService implements IUniversiteService {
 
     @Override
     public Universite addOrUpdate(Universite u) {
-        Universite saved = repo.save(u);
-        return saved;
+        return repo.save(u);
     }
 
     @Override
@@ -27,7 +26,7 @@ public class UniversiteService implements IUniversiteService {
 
     @Override
     public Universite findById(long id) {
-        return repo.findById(id).orElse(Universite.builder().nomUniversite("mouch maoujoud").build());
+        return repo.findById(id).get();
     }
 
     @Override

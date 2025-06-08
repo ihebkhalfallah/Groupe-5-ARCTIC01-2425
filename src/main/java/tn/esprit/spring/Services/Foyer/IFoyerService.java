@@ -22,7 +22,8 @@ public interface IFoyerService {
 
     Universite desaffecterFoyerAUniversite(long idUniversite);
 
-    Foyer ajouterFoyerEtAffecterAUniversite (Foyer foyer, long idUniversite); // Universite: Parent / Foyer:Child
+    Foyer ajouterFoyerEtAffecterAUniversite(Foyer foyer, long idUniversite); // Universite: Parent / Foyer:Child
+
     Foyer ajoutFoyerEtBlocs(Foyer foyer);
 
     Universite affecterFoyerAUniversite(long idF, long idU);

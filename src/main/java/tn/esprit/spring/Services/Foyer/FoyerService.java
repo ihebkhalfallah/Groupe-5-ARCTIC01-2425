@@ -92,8 +92,8 @@ public class FoyerService implements IFoyerService {
 
     @Override
     public Universite affecterFoyerAUniversite(long idF, long idU) {
-        Universite u= universiteRepository.findById(idU).get();
-        Foyer f= foyerRepository.findById(idF).get();
+        Universite u = universiteRepository.findById(idU).get();
+        Foyer f = foyerRepository.findById(idF).get();
         u.setFoyer(f);
         return universiteRepository.save(u);
     }

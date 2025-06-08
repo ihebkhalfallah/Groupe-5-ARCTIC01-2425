@@ -16,17 +16,17 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Bloc{
+public class Bloc {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long idBloc;
     String nomBloc;
     long capaciteBloc;
-    
+
     @ManyToOne
     @JsonIgnore
     Foyer foyer;
     @OneToMany(mappedBy = "bloc", fetch = FetchType.EAGER)
     @JsonIgnore
-    List<Chambre> chambres= new ArrayList<>();
+    List<Chambre> chambres = new ArrayList<>();
 }

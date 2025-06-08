@@ -50,7 +50,7 @@ public class ChambreRestController {
     }
 
     @GetMapping("getChambresNonReserveParNomFoyerEtTypeChambre")
-    List<Chambre> getChambresNonReserveParNomFoyerEtTypeChambre(@RequestParam String nomFoyer,@RequestParam TypeChambre type){
-        return service.getChambresNonReserveParNomFoyerEtTypeChambre(nomFoyer,type);
+    List<Chambre> getChambresNonReserveParNomFoyerEtTypeChambre(@RequestParam String nomFoyer, @RequestParam TypeChambre type) {
+        return service.getChambresNonReserveParNomFoyerEtTypeChambre(nomFoyer, type);
     }
 }

@@ -79,13 +79,10 @@ public interface BlocRepository extends JpaRepository<Bloc, Long> {
     List<Bloc> findByFoyerUniversiteIdUniversiteJPQL(long idUniversite);
 
 
-
-
-
-
     //9- Recherche des blocs d'un foyer spécifique
     @Query("select b from Bloc b where b.foyer.idFoyer=?1 ")
     List<Bloc> req9JPQL(long idF);
+
     @Query(value = "SELECT b.* FROM t_bloc b JOIN t_foyer " +
             "f ON f.id_foyer= b.foyer_id_foyer  WHERE f.id_foyer=?1", nativeQuery = true)
     List<Bloc> req9SQL(long idF);
@@ -93,27 +90,12 @@ public interface BlocRepository extends JpaRepository<Bloc, Long> {
     // 10- Recherche des blocs pour un foyer d'une université donnée
     @Query("select b from Bloc b where b.foyer.universite.idUniversite=?1 ")
     List<Bloc> req10JPQL(long idU);
+
     @Query(value = "SELECT * FROM t_bloc b JOIN t_foyer f " +
             "ON f.id_foyer= b.foyer_id_foyer JOIN t_universite u " +
             "ON u.foyer_id_foyer=f.id_foyer WHERE u.id_universite=?1;"
             , nativeQuery = true)
     List<Bloc> req10SQL(long idU);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }

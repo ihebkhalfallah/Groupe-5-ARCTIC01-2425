@@ -7,12 +7,15 @@ import tn.esprit.spring.DAO.Entities.TypeChambre;
 
 import java.util.List;
 
-public interface FoyerRepository extends JpaRepository<Foyer,Long> {
+public interface FoyerRepository extends JpaRepository<Foyer, Long> {
     Foyer findByNomFoyer(String nom);
+
     // select * from Foyer where capaciteFoyer > ....
     List<Foyer> findByCapaciteFoyerGreaterThan(int capacite);
+
     // select * from Foyer where capaciteFoyer < ....
     List<Foyer> findByCapaciteFoyerLessThan(int capacite);
+
     // select * from Foyer where capaciteFoyer < .... and capaciteFoyer> ....
     List<Foyer> findByCapaciteFoyerBetween(int min, int max);
 

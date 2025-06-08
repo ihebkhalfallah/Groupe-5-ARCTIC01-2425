@@ -13,28 +13,25 @@ public interface EtudiantRepository extends JpaRepository<Etudiant, Long> {
 
     // Afficher la liste des étudiants avec le nom passé en paramétre
     List<Etudiant> findByNomEt(String nom);
+
     // JPQL (Les noms des entités, les nom des attributs)
     @Query("select e from Etudiant e where e.nomEt=?1")
     List<Etudiant> selectJPQL(String nom);
+
     //SQL (Les noms des tables, les nom des colonnes)
-    @Query(value = "SELECT * FROM t_etudiant WHERE nom_et=:nom",nativeQuery = true)
+    @Query(value = "SELECT * FROM t_etudiant WHERE nom_et=:nom", nativeQuery = true)
     List<Etudiant> selectSQL(@Param("nom") String nom);
 
     // Afficher la liste des étudiants avec le nom et le prenom passé en paramétre
     List<Etudiant> findByNomEtAndPrenomEt(String nom, String prenom);
+
     // JPQL (Les noms des entités, les nom des attributs)
     @Query("select e from Etudiant e where e.nomEt=:nom and e.prenomEt=:prenom")
-    List<Etudiant> select2JPQL(@Param("nom") String nom,@Param("prenom") String prenom);
+    List<Etudiant> select2JPQL(@Param("nom") String nom, @Param("prenom") String prenom);
+
     //SQL (Les noms des tables, les nom des colonnes)
-    @Query(value = "SELECT * FROM t_etudiant WHERE nom_et=?2 AND prenom_et=?1",nativeQuery = true)
+    @Query(value = "SELECT * FROM t_etudiant WHERE nom_et=?2 AND prenom_et=?1", nativeQuery = true)
     List<Etudiant> select2SQL(String prenom, String nom);
-
-
-
-
-
-
-
 
 
     Etudiant getByNomEtAndPrenomEt(String nom, String prenom);

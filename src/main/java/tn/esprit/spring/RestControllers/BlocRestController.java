@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.Services.Bloc.IBlocService;
 
-
 import java.util.List;
 
 @RestController
@@ -43,6 +42,7 @@ public class BlocRestController {
     Bloc affecterChambresABloc(@RequestBody List<Long> numChambre, @RequestParam String nomBloc) {
         return service.affecterChambresABloc(numChambre, nomBloc);
     }
+
     // ...............?nomFoyer=....&nomBloc=....
     @PutMapping("affecterBlocAFoyer")
     Bloc affecterBlocAFoyer(@RequestParam String nomBloc, @RequestParam String nomFoyer) {
@@ -61,7 +61,7 @@ public class BlocRestController {
     }
 
     @PostMapping("ajouterBlocEtAffecterAFoyer/{nomF}")
-    Bloc ajouterBlocEtAffecterAFoyer(@RequestBody Bloc b,@PathVariable String nomF) {
-        return service.ajouterBlocEtAffecterAFoyer(b,nomF);
+    Bloc ajouterBlocEtAffecterAFoyer(@RequestBody Bloc b, @PathVariable String nomF) {
+        return service.ajouterBlocEtAffecterAFoyer(b, nomF);
     }
 }
