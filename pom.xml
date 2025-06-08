@@ -77,7 +77,7 @@
 <distributionManagement>
     <repository>
         <id>firstPipeline</id>
-        <url>http://192.168.249.154:8081/repository/maven-releases/</url>
+        <url>http://192.168.206.133:8081/repository/maven-releases/</url>
     </repository>
 </distributionManagement>
 </project>
