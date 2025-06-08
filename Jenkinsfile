@@ -1,6 +1,13 @@
 pipeline {
     agent any
+    environment {
+        GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
+        BRANCH = 'foyer-mayssen'
+        GIT_CREDENTIALS_ID = 'ce4c016c-23f3-4d95-8efb-716e9aacd9cc'
+        SONARQUBE_SERVER = 'http://localhost:9000/'
+        SONAR_TOKEN = '74ff7b033eee256471f7656d3c44a1c4c7a3391a' // to be moved
 
+    }
     triggers {
         pollSCM('H/5 * * * *')
     }
@@ -32,19 +39,13 @@ pipeline {
         }
 
 
-        stage('SonarQube analysis') {
-            steps {
-                echo "Code analysis"
-                // Use the 'sonartoken' credential from Jenkins, assigning its value to SONAR_LOGIN_TOKEN environment variable
-                withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_LOGIN_TOKEN')]) {
-                    sh '''
-                        mvn sonar:sonar \
-                          -Dsonar.host.url=http://172.26.160.39:9000 \
-                          -Dsonar.login=${SONAR_LOGIN_TOKEN}
-                    '''
+
+               stage('SonarQube analysis') {
+                    steps {
+                        echo "Code analysis"
+                        sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
-            }
-        }
 
         stage('Package') {
             steps {
