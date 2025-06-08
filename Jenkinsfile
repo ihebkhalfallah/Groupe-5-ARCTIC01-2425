@@ -58,23 +58,22 @@ stage('Upload to Nexus') {
 
             echo "Uploading artifact: ${jarFile}"
 
-            nexusArtifactUploader(
-                nexusVersion: 'nexus3',
-                protocol: 'http',
-                nexusUrl: '172.26.160.39:8081',
-                groupId: groupId,
-                version: version,
-                repository: version.endsWith("SNAPSHOT") ? 'maven-snapshots' : 'maven-releases',
-                credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
-                artifacts: [
-                    [
-                        artifactId: artifactId,
-                        classifier: '',
-                        file: jarFile,
-                        type: 'jar'
-                    ]
-                ]
-            )
+nexusArtifactUploader(
+  nexusVersion: 'nexus3',
+  protocol: 'http',
+  nexusUrl: '172.26.160.39:8081',
+  groupId: 'tn.esprit.spring',
+  version: '1.4.0-SNAPSHOT',
+  repository: 'maven-snapshots',       // ✅ Change this from 'maven-releases'
+  credentialsId: 'nexus-creds',
+  artifacts: [
+    [artifactId: 'Foyer',
+     classifier: '',
+     file: 'target/Foyer-1.4.0-SNAPSHOT.jar',
+     type: 'jar']
+  ]
+)
+
         }
     }
 }
