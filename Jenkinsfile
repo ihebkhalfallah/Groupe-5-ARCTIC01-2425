@@ -6,7 +6,7 @@ pipeline {
         BRANCH = 'molka-etudiant'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
         SONARQUBE_SERVER = 'http://localhost:9000'
-        SONAR_TOKEN = '342bac35c40ab46e69046cda2e7a5e8c7b13c313'
+        SONAR_TOKEN = 'e8361cc9ef5279f90b3a753e89690a1ec86aba19'
     }
 
     stages {
