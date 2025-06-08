@@ -55,23 +55,30 @@ pipeline {
             }
         }
 
-        stage('Deploy to Nexus') {
+        stage('Upload to Nexus') {
             steps {
-                sh 'ls -lh target/' // Pour vérifier que le fichier existe
                 script {
+                    def pom = readMavenPom file: 'pom.xml'
+                    def version = pom.version
+                    def artifactId = pom.artifactId
+                    def groupId = pom.groupId
+                    def jarFile = "target/${artifactId}-${version}.jar"
+
+                    echo "Uploading artifact: ${jarFile}"
+
                     nexusArtifactUploader(
                         nexusVersion: 'nexus3',
                         protocol: 'http',
                         nexusUrl: '172.26.160.39:8081',
-                        groupId: 'tn.esprit.spring',
-                        version: "${VERSION}",
+                        groupId: groupId,
+                        version: version,
                         repository: 'maven-releases',
-                        credentialsId: 'nexus',
+                        credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
                         artifacts: [
                             [
-                                artifactId: 'Foyer',
+                                artifactId: artifactId,
                                 classifier: '',
-                                file: "target/Foyer-${VERSION}.jar",
+                                file: jarFile,
                                 type: 'jar'
                             ]
                         ]
