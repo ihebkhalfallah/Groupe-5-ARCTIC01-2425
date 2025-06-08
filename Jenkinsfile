@@ -52,30 +52,32 @@ stage('Upload to Nexus') {
         script {
             def pom = readMavenPom file: 'pom.xml'
             def version = pom.version
-            def artifactId = pom.artifactId
-            def groupId = pom.groupId
-            def jarFile = "target/${artifactId}-${version}.jar"
+            def repository = version.endsWith('SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
+            def jarFile = "target/${pom.artifactId}-${version}.jar"
 
-            echo "Uploading artifact: ${jarFile}"
+            echo "Uploading artifact: ${jarFile} to repository: ${repository}"
 
-nexusArtifactUploader(
-  nexusVersion: 'nexus3',
-  protocol: 'http',
-  nexusUrl: '172.26.160.39:8081',
-  groupId: 'tn.esprit.spring',
-  version: '1.4.0-SNAPSHOT',
-  repository: 'maven-snapshots',       // ✅ Change this from 'maven-releases'
-  credentialsId: 'nexus-creds',
-  artifacts: [
-    [artifactId: 'Foyer',
-     classifier: '',
-     file: 'target/Foyer-1.4.0-SNAPSHOT.jar',
-     type: 'jar']
-  ]
-)
-
+            nexusArtifactUploader(
+                nexusVersion: 'nexus3',
+                protocol: 'http',
+                nexusUrl: '172.26.160.39:8081',
+                groupId: pom.groupId,
+                version: version,
+                repository: repository,
+                credentialsId: 'nexus-creds',
+                artifacts: [
+                    [
+                        artifactId: pom.artifactId,
+                        classifier: '',
+                        file: jarFile,
+                        type: 'jar'
+                    ]
+                ]
+            )
         }
     }
+}
+
 }
 
     }
