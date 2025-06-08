@@ -8,9 +8,6 @@ pipeline {
         SONARQUBE_SERVER = 'http://localhost:9000/'
         SONAR_TOKEN = '74ff7b033eee256471f7656d3c44a1c4c7a3391a'
         VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
-
-
-
     }
 
     triggers {
@@ -20,7 +17,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: "${BRANCH}", url: "${GIT_REPO}", credentialsId: "${GIT_CREDENTIALS_ID}"
+            }
+        }
+
+        stage('Set Version') {
+            steps {
+                sh "mvn versions:set -DnewVersion=${VERSION}"
             }
         }
 
@@ -45,7 +48,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "Code analysis with SonarQube"
-                sh "mvn sonar:sonar -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
+                sh "mvn sonar:sonar -Dsonar.projectKey=Foyer -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
             }
         }
 
@@ -55,34 +58,15 @@ pipeline {
             }
         }
 
-        stage('Upload to Nexus') {
+        stage('Deploy to Nexus') {
             steps {
                 script {
                     def pom = readMavenPom file: 'pom.xml'
                     def version = pom.version
-                    def artifactId = pom.artifactId
-                    def groupId = pom.groupId
-                    def jarFile = "target/${artifactId}-${version}.jar"
+                    def repo = version.contains("SNAPSHOT") ? "maven-snapshots" : "maven-releases"
+                    def repoUrl = "http://172.26.160.39:8081/repository/${repo}"
 
-                    echo "Uploading artifact: ${jarFile}"
-
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        nexusUrl: '172.26.160.39:8081',
-                        groupId: groupId,
-                        version: version,
-                        repository: 'maven-releases',
-                        credentialsId: 'd2a4ff90-1e10-479f-8069-aaf9733697f4',
-                        artifacts: [
-                            [
-                                artifactId: artifactId,
-                                classifier: '',
-                                file: jarFile,
-                                type: 'jar'
-                            ]
-                        ]
-                    )
+                    sh "mvn deploy -DskipTests -DaltDeploymentRepository=${repo}::default::${repoUrl}"
                 }
             }
         }
