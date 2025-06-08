@@ -27,7 +27,7 @@ public class EtudiantService implements IEtudiantService {
 
     @Override
     public Etudiant findById(long id) {
-        return repo.findById(id).get();
+        return repo.findById(id).orElse(null);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class EtudiantService implements IEtudiantService {
             (String idR, String nomE, String prenomE) {
         // ManyToMany: Reservation(Child) -- Etudiant(Parent)
         // 1- Récupérer les objets
-        Reservation res= reservationRepository.findById(idR).get();
+        Reservation res= reservationRepository.findById(idR).orElse(null);
         Etudiant et= repo.getByNomEtAndPrenomEt(nomE,prenomE);
         // 2- Affectation: On affecte le child au parent
         et.getReservations().add(res);
@@ -62,7 +62,7 @@ public class EtudiantService implements IEtudiantService {
             (String idR, String nomE, String prenomE) {
         // ManyToMany: Reservation(Child) -- Etudiant(Parent)
         // 1- Récupérer les objets
-        Reservation res= reservationRepository.findById(idR).get();
+        Reservation res= reservationRepository.findById(idR).orElse(null);
         Etudiant et= repo.getByNomEtAndPrenomEt(nomE,prenomE);
         // 2- Affectation: On desaffecte le child au parent
         et.getReservations().remove(res);

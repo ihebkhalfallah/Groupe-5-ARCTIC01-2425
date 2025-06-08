@@ -48,14 +48,16 @@ public class BlocService implements IBlocService {
 
     @Override
     public Bloc findById(long id) {
-        return repo.findById(id).get();
+        return repo.findById(id).orElse(null);
     }
 
     @Override
     public void deleteById(long id) {
-        Bloc b = repo.findById(id).get();
-        chambreRepository.deleteAll(b.getChambres());
-        repo.delete(b);
+        Bloc b = repo.findById(id).orElse(null);
+        if (b != null) {
+            chambreRepository.deleteAll(b.getChambres());
+            repo.delete(b);
+        }
     }
 
     @Override

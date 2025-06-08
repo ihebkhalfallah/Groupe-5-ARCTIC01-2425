@@ -33,7 +33,7 @@ public class ReservationService implements IReservationService {
 
     @Override
     public Reservation findById(String id) {
-        return repo.findById(id).get();
+        return repo.findById(id).orElse(null);
     }
 
     @Override
@@ -143,21 +143,23 @@ public class ReservationService implements IReservationService {
 
     @Override
     public void affectReservationAChambre(String idRes, long idChambre) {
-        Reservation r = repo.findById(idRes).get();
-        Chambre c = chambreRepository.findById(idChambre).get();
+        Reservation r = repo.findById(idRes).orElse(null);
+        Chambre c = chambreRepository.findById(idChambre).orElse(null);
         // Parent: Chambre , Child: Reservation
         // On affecte le child au parent
-        c.getReservations().add(r);
+        if(c!=null){
+        c.getReservations().add(r);}
         chambreRepository.save(c);
     }
 
     @Override
     public void deaffectReservationAChambre(String idRes, long idChambre) {
-        Reservation r = repo.findById(idRes).get();
-        Chambre c = chambreRepository.findById(idChambre).get();
+        Reservation r = repo.findById(idRes).orElse(null);
+        Chambre c = chambreRepository.findById(idChambre).orElse(null);
         // Parent: Chambre , Child: Reservation
         // On affecte le child au parent
-        c.getReservations().remove(r);
+        if(c!=null){
+        c.getReservations().remove(r);}
         chambreRepository.save(c);
     }
 
@@ -166,7 +168,6 @@ public class ReservationService implements IReservationService {
         // Début "récuperer l'année universitaire actuelle"
         LocalDate dateDebutAU;
         LocalDate dateFinAU;
-        int numReservation;
         int year = LocalDate.now().getYear() % 100;
         if (LocalDate.now().getMonthValue() <= 7) {
             dateDebutAU = LocalDate.of(Integer.parseInt("20" + (year - 1)), 9, 15);

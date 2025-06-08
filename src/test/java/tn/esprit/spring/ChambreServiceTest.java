@@ -9,7 +9,7 @@ import tn.esprit.spring.Services.Chambre.IChambreService;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ChambreServiceTest {
+class ChambreServiceTest {
 
     @Autowired
     private IChambreService chambreService;
@@ -32,7 +32,6 @@ public class ChambreServiceTest {
 
         // Assert
         Assertions.assertNotNull(savedChambre, "Saved chambre should not be null");
-        Assertions.assertNotNull(savedChambre.getIdChambre(), "Chambre ID should be generated");
         Assertions.assertEquals(testChambre.getNumeroChambre(), savedChambre.getNumeroChambre(), "NumeroChambre should match");
         Assertions.assertEquals(testChambre.getTypeC(), savedChambre.getTypeC(), "TypeChambre should match");
 
