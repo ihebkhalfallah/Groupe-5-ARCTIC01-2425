@@ -75,7 +75,11 @@
 
 
     </dependencies>
-
+    <distributionManagement>
+        <repository><id>firstPipeline</id>
+            <url>http://172.26.160.39:8080/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
     <build>
         <plugins>
             <plugin>
