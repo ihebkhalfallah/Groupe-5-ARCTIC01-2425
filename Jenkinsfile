@@ -47,36 +47,28 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
-stage('Upload to Nexus') {
+stage("Upload Artifact") {
     steps {
-        script {
-            def pom = readMavenPom file: 'pom.xml'
-            def version = pom.version
-            def repository = version.endsWith('SNAPSHOT') ? 'maven-snapshots' : 'maven-releases'
-            def jarFile = "target/${pom.artifactId}-${version}.jar"
-
-            echo "Uploading artifact: ${jarFile} to repository: ${repository}"
-
-            nexusArtifactUploader(
-                nexusVersion: 'nexus3',
-                protocol: 'http',
-                nexusUrl: '172.26.160.39:8081',
-                groupId: pom.groupId,
-                version: version,
-                repository: repository,
-                credentialsId: 'nexus-creds',
-                artifacts: [
-                    [
-                        artifactId: pom.artifactId,
-                        classifier: '',
-                        file: jarFile,
-                        type: 'jar'
-                    ]
+        nexusArtifactUploader(
+            nexusVersion: 'nexus3',
+            protocol: 'http',
+            nexusUrl: 'http://172.26.160.39:8081',
+            groupId: 'QA',
+            version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+            repository: 'release-seconde',
+            credentialsId: 'nexus',
+            artifacts: [
+                [
+                    artifactId: 'vproapp',
+                    classifier: '',
+                    file: 'target/vprofile-v2.war',
+                    type: 'war'
                 ]
-            )
-        }
+            ]
+        )
     }
 }
+
 
 }
 
