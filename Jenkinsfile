@@ -7,7 +7,10 @@ pipeline {
         GIT_CREDENTIALS_ID = 'ce4c016c-23f3-4d95-8efb-716e9aacd9cc'
         SONARQUBE_SERVER = 'http://localhost:9000/'
         SONAR_TOKEN = '74ff7b033eee256471f7656d3c44a1c4c7a3391a'
-        PROJECT_VERSION = '1.4.0'
+        VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
+
+
+
     }
 
     triggers {
@@ -61,14 +64,14 @@ pipeline {
                         protocol: 'http',
                         nexusUrl: '172.26.160.39:8081',
                         groupId: 'tn.esprit.spring',
-                        version: "${PROJECT_VERSION}",
+                        version: "${VERSION}",
                         repository: 'maven-releases',
                         credentialsId: 'nexus',
                         artifacts: [
                             [
                                 artifactId: 'Foyer',
                                 classifier: '',
-                                file: "target/Foyer-${PROJECT_VERSION}.jar",
+                                file: "target/Foyer-${VERSION}.jar",
                                 type: 'jar'
                             ]
                         ]
