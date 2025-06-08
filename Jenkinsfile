@@ -47,6 +47,7 @@ pipeline {
                 sh 'mvn package -DskipTests'
             }
         }
+
 stage("Upload Artifact") {
     steps {
         nexusArtifactUploader(
@@ -67,10 +68,6 @@ stage("Upload Artifact") {
             ]
         )
     }
-}
-
-
-}
 
     }
 
