@@ -31,14 +31,18 @@ pipeline {
             }
         }
 
+
         stage('SonarQube analysis') {
             steps {
                 echo "Code analysis"
-                sh '''
-                    mvn sonar:sonar \
-                      -Dsonar.host.url=http://172.26.160.39:9000 \
-                      -Dsonar.login=3f503a6dd7d75937d89375265c03df9e2478fabc
-                '''
+                // Use the 'sonartoken' credential from Jenkins, assigning its value to SONAR_LOGIN_TOKEN environment variable
+                withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_LOGIN_TOKEN')]) {
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.host.url=http://172.26.160.39:9000 \
+                          -Dsonar.login=${SONAR_LOGIN_TOKEN}
+                    '''
+                }
             }
         }
 
