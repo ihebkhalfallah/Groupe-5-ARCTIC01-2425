@@ -27,9 +27,6 @@ class ChambreServiceMockitoTest {
     @Mock
     private ChambreRepository chambreRepository;
 
-    @Mock
-    private BlocRepository blocRepository;
-
     @InjectMocks
     private ChambreService chambreService;
 
@@ -82,14 +79,12 @@ class ChambreServiceMockitoTest {
 
     @Order(3)
     @Test
-    void whenFindByIdNotFound_thenThrowException() {
+    void whenFindByIdNotFound_thenReturnNull() {
         // Arrange
         when(chambreRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> {
-            chambreService.findById(999L);
-        });
+        assertNull(chambreService.findById(999L));
     }
 
     @Order(4)

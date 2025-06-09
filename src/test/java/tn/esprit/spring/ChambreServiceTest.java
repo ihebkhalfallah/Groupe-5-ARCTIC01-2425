@@ -20,10 +20,7 @@ class ChambreServiceTest {
 
     @BeforeAll
     static void setUp() {
-        testChambre = Chambre.builder()
-                .numeroChambre(123L)
-                .typeC(TypeChambre.DOUBLE)
-                .build();
+        testChambre = Chambre.builder().numeroChambre(123L).typeC(TypeChambre.DOUBLE).build();
     }
 
     @Test
@@ -35,7 +32,8 @@ class ChambreServiceTest {
         // Assert
         Assertions.assertNotNull(savedChambre, "Saved chambre should not be null");
         Assertions.assertEquals(testChambre.getNumeroChambre(), savedChambre.getNumeroChambre(), "NumeroChambre should match");
-        Assertions.assertEquals(testChambre.getTypeC(), savedChambre.getTypeC(), "TypeChambre should match");
+        Assertions.assertEquals(testChambre.getTypeC(), savedChambre.getTypeC(),
+                "TypeChambre should match");
 
         // Update testChambre with the saved instance
         testChambre = savedChambre;
@@ -49,7 +47,8 @@ class ChambreServiceTest {
 
         // Assert
         Assertions.assertNotNull(foundChambre, "Chambre should be found");
-        Assertions.assertEquals(testChambre.getIdChambre(), foundChambre.getIdChambre(), "Chambre IDs should match");
+        Assertions.assertEquals(testChambre.getIdChambre(), foundChambre.getIdChambre(),
+                "Chambre IDs should match");
     }
 
     @Test
@@ -59,8 +58,7 @@ class ChambreServiceTest {
         chambreService.delete(testChambre);
 
         // Verify
-        Assertions.assertThrows(Exception.class, () -> {
-            chambreService.findById(testChambre.getIdChambre());
-        }, "Chambre should be deleted");
+        Assertions.assertNull(chambreService.findById(testChambre.getIdChambre()),
+                "Chambre should be deleted");
     }
 }
