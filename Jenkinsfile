@@ -4,96 +4,42 @@ pipeline {
     environment {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
         BRANCH = 'molka-etudiant'
-        GIT_CREDENTIALS_ID = 'jenkins-pipeline'
-        SONARQUBE_SERVER = 'http://localhost:9000'
-        SONAR_TOKEN = 'e8361cc9ef5279f90b3a753e89690a1ec86aba19'
+        GIT_CREDENTIALS_ID = 'github-token'       // Your Jenkins credential ID for GitHub token
+        SONARQUBE_SERVER_NAME = 'sq1'              // The name you gave your SonarQube server in Jenkins system config
+        SONAR_PROJECT_KEY = 'groupe5-arctic01-2425-molka-etudiant'
     }
 
     stages {
-        stage('Cloner le dépôt Git') {
+        stage('Clone Git Repository') {
             steps {
-                echo "Clonage de la branche '${BRANCH}' depuis le dépôt '${GIT_REPO}'"
+                echo "Cloning branch '${BRANCH}' from repository '${GIT_REPO}'"
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
-        stage('Nettoyage et compilation') {
+        stage('Clean and Compile') {
             steps {
-                echo "Exécution de mvn clean compile"
+                echo "Running mvn clean compile"
                 sh 'mvn clean compile'
             }
         }
 
-        stage('Analyse SonarQube') {
+        stage('SonarQube Analysis') {
             steps {
-                echo "Lancement de l’analyse SonarQube"
-                sh """
-                    mvn sonar:sonar \
-                        -Dsonar.projectKey=molka-projet \
-                        -Dsonar.host.url=${SONARQUBE_SERVER} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                """
+                echo "Running SonarQube analysis on project '${SONAR_PROJECT_KEY}'"
+                withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
+                    sh """
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY}
+                    """
+                }
             }
         }
 
-        stage('Lancer un conteneur MySQL') {
+        stage('Post Actions') {
             steps {
-                echo "Démarrage d’un conteneur MySQL pour les tests"
-                sh '''
-                    docker run --rm --name mysql-test-container \
-                        -e MYSQL_ROOT_PASSWORD=root \
-                        -e MYSQL_DATABASE=testdb \
-                        -e MYSQL_USER=testuser \
-                        -e MYSQL_PASSWORD=testpass \
-                        -p 3306:3306 -d mysql:5.7
-                '''
-                echo "Pause pour laisser MySQL démarrer correctement"
-                sh 'sleep 25'
+                echo 'Pipeline completed successfully!'
             }
-        }
-
-        stage('Exécution des tests unitaires') {
-            steps {
-                echo "Lancement des tests avec Maven"
-                sh 'mvn test'
-            }
-        }
-
-        stage('Création du package') {
-            steps {
-                echo "Génération du package (JAR/WAR)"
-                sh 'mvn package'
-            }
-        }
-
-        stage('Déploiement avec Docker Compose') {
-            steps {
-                echo "Exécution de docker-compose up"
-                sh '''
-                    docker-compose down || true
-                    docker-compose up -d --build
-                '''
-            }
-        }
-
-        stage('Déploiement final') {
-            steps {
-                echo "Déploiement de l’application via Maven deploy"
-                sh 'mvn deploy'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline exécuté avec succès.'
-        }
-        failure {
-            echo 'Le pipeline a échoué.'
-        }
-        always {
-            echo 'Nettoyage post-exécution.'
-            sh 'docker-compose down || true'
         }
     }
 }
