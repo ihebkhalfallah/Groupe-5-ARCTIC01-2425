@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         GITHUB_CREDENTIALS = credentials('github-token')
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
     }
 
     stages {
@@ -62,6 +63,41 @@ pipeline {
             steps {
                 echo 'Completed successfully!'
             }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t rafik609/foyer-backend .'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${IMAGE_NAME}
+                    '''
+                }
+            }
+        }
+
+        stage('Docker Compose') {
+            steps {
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline completed (post block).'
+        }
+        success {
+            echo '✔️ Pipeline finished successfully.'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs for details.'
         }
     }
 }
