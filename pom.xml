@@ -100,8 +100,8 @@
 
     <distributionManagement>
         <repository>
-            <id>firstPipeline</id>
-            <url>http://192.168.1.9:8081/repository/maven-releases/</url>
+            <id>nexus</id>
+            <url>http://localhost:8081/repository/jenkins-nexus/</url>
         </repository>
     </distributionManagement>
 
