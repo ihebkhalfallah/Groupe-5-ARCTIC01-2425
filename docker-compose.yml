@@ -4,7 +4,7 @@ services:
 
   backend:
     image: groupe5-arctic01-2425:latest
-    container_name: foyer-backend
+    container_name: "foyer-backend-${BUILD_ID}"
     ports:
       - "8086:8086"
     environment:
