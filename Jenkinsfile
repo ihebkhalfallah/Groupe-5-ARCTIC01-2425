@@ -6,7 +6,7 @@ pipeline {
         BRANCH = 'foyer-mayssen'
         GIT_CREDENTIALS_ID = 'ce4c016c-23f3-4d95-8efb-716e9aacd9cc'
         SONARQUBE_SERVER = 'http://localhost:9000/'
-        SONAR_TOKEN = '74ff7b033eee256471f7656d3c44a1c4c7a3391a'
+        SONAR_TOKEN = 'b6c4f4e1c1c5cce48fed642c92ac36d93b98f6f0'
         VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
         DOCKER_HUB_CREDENTIALS = 'dockerhub'
     }
