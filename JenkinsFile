@@ -7,13 +7,13 @@ pipeline {
     }
 
     stages {
-        stage('Get code from Repo') {
+/*        stage('Get code from Repo') {
             steps {
                 git url: 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git',
                         credentialsId: "${GITHUB_CREDENTIALS}",
                         branch: 'RafikChambreBranch'
             }
-        }
+        }*/
 
         stage('Maven Clean') {
             steps {
@@ -67,11 +67,17 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push rafik609/foyer-backend
-                    '''
+                script {
+                    if (false){
+                        withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh '''
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                docker push rafik609/foyer-backend
+                            '''
+                        }
+                    } else {
+                        echo "skipping push to dockerhub"
+                    }
                 }
             }
         }
