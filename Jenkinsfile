@@ -70,7 +70,7 @@ pipeline {
                     def repo = version.contains("SNAPSHOT") ? "maven-snapshots" : "maven-releases"
                     def repoUrl = "http://172.26.160.39:8081/repository/${repo}"
 
-                    sh "mvn deploy -DskipTests -DaltDeploymentRepository=${repo}::default::${repoUrl}"
+                    sh "mvn deploy -DskipTests"
                 }
             }
         }
