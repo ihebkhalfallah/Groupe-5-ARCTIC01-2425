@@ -95,17 +95,12 @@ EOF
                 """
             }
         }
-
-       stage('Docker Build') {
-        steps {
-            script {
-                def DOCKER_IMAGE_NAME = 'foyer'
-                def DOCKER_IMAGE_TAG = 'latest'
-                echo "Building ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
-            }
-        }
-    }
+    
+        stage('Docker Build') {
+                steps {
+                    echo "Building Docker image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
+                }
 
 
         stage('Docker Push') {
