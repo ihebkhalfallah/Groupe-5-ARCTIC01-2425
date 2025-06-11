@@ -24,11 +24,14 @@ pipeline {
             }
         }
 
-        stage('Get code from Repo') {
+         stage('Get code from Repo') {
             steps {
                 echo "Cloned repo and ready to build"
+                echo "Workspace is: ${env.WORKSPACE}"
+                sh 'ls -la'
             }
         }
+
 
         stage('Maven Clean') {
             steps {
