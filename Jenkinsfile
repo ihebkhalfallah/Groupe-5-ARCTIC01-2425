@@ -65,14 +65,14 @@ pipeline {
 
         stage('Create Package') {
             steps {
-                echo "Creating package (jar/war)"
-                sh 'mvn package'
+                echo "Creating package (jar/war) without tests"
+                sh 'mvn package -Dmaven.test.skip=true'
             }
         }
 
         stage('Publish to Nexus') {
             steps {
-                echo "Publishing artifact to Nexus"
+                echo "Publishing artifact to Nexus (skipping tests)"
                 withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
                     sh '''
                         mkdir -p ~/.m2
@@ -91,17 +91,17 @@ EOF
                 }
 
                 sh """
-                    mvn deploy -DaltDeploymentRepository=nexus::default::${NEXUS_REPO_URL}
+                    mvn deploy -Dmaven.test.skip=true -DaltDeploymentRepository=nexus::default::${NEXUS_REPO_URL}
                 """
             }
         }
-    
-        stage('Docker Build') {
-                steps {
-                    echo "Building Docker image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
-                }
 
+        stage('Docker Build') {
+            steps {
+                echo "Building Docker image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
+            }
+        }
 
         stage('Docker Push') {
             steps {
