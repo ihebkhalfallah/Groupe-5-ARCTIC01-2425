@@ -78,7 +78,7 @@ pipeline {
         }
         stage('Docker Build') {
             steps {
-                sh 'docker build -t mayssenharb/foyer-backendbuild .'
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
 
