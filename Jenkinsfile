@@ -112,6 +112,13 @@ EOF
                 sh 'echo "No external registry configured, image built locally."'
             }
         }
+        
+        stage('Check Docker Compose') {
+            steps {
+                sh 'docker compose version'
+            }
+        }
+
 
         stage('Docker Compose') {
             steps {
