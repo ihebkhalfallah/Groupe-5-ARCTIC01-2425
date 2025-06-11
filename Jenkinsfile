@@ -5,6 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
         BRANCH = 'molka-etudiant'
         GIT_CREDENTIALS_ID = 'github-token'
+        BUILD_ID = "${env.BUILD_ID}" 
 
         SONARQUBE_SERVER_NAME = 'sq1'
         SONAR_PROJECT_KEY = 'groupe5-arctic01-2425-molka-etudiant'
