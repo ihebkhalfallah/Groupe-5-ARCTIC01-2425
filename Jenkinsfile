@@ -8,6 +8,7 @@ pipeline {
         SONARQUBE_SERVER = 'http://localhost:9000/'
         SONAR_TOKEN = '74ff7b033eee256471f7656d3c44a1c4c7a3391a'
         VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
+        DOCKER_HUB_CREDENTIALS = 'dockerhub'
     }
 
     triggers {
@@ -16,20 +17,13 @@ pipeline {
 
     stages {
 
-        stage('Start Services with Docker Compose') {
-                steps {
-                    script {
-                        echo '🛠️ Lancement des services Docker (MySQL, SonarQube, Prometheus, etc.)'
-                        sh 'docker-compose -f docker-compose.yml up -d --build'
-                    }
-                }
-            }
 
-        stage('Checkout') {
+
+     /*   stage('Checkout') {
             steps {
                 checkout scm
             }
-        }
+        }*/
 
         stage('Set Version') {
             steps {
@@ -80,6 +74,31 @@ pipeline {
                 }
             }
         }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t mayssenharb/foyer-backendbuild .'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push mayssenharb/foyer-backendbuild
+                    '''
+                }
+            }
+        }
+
+        stage('Docker Compose') {
+            steps {
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d'
+            }
+        }
+
+
     }
 
     post {

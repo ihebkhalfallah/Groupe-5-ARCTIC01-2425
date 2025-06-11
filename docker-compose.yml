@@ -2,9 +2,11 @@ version: "3.8"
 
 services:
   backend:
-    build:
-      context: .  # current directory
-      dockerfile: Dockerfile  # make sure this file exists!
+    image : mayssenharb/foyer-backendbuild
+
+    #    build:
+#      context: .  # current directory
+#      dockerfile: Dockerfile  # make sure this file exists!
     container_name: backend
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://database:3306/foyer?createDatabaseIfNotExist=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
