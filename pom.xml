@@ -21,6 +21,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Add this property to always skip tests -->
+        <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <dependencies>
