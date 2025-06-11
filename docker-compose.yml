@@ -16,7 +16,7 @@ services:
 
   mysql:
     image: mysql:5.7
-    container_name: mysql
+    container_name: mysqll
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db
@@ -27,7 +27,7 @@ services:
 
   sonarqube:
     image: sonarqube:8.9.7-community
-    container_name: sonarqube
+    container_name: sonarqubee
     ports:
       - "9000:9000"
     volumes:
@@ -39,7 +39,7 @@ services:
 
   nexus:
     image: sonatype/nexus3
-    container_name: nexus
+    container_name: nexuss
     ports:
       - "8081:8081"
     volumes:
@@ -50,7 +50,7 @@ services:
 
   prometheus:
     image: prom/prometheus
-    container_name: prometheus
+    container_name: prometheuss
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -61,7 +61,7 @@ services:
 
   grafana:
     image: grafana/grafana
-    container_name: grafana
+    container_name: grafanaa
     ports:
       - "3000:3000"
     volumes:
