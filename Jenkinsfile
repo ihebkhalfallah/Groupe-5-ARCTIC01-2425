@@ -9,6 +9,8 @@ pipeline {
         SONAR_TOKEN = 'b6c4f4e1c1c5cce48fed642c92ac36d93b98f6f0'
         VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
         DOCKER_HUB_CREDENTIALS = 'dockerhub'
+        IMAGE_NAME = 'backendTest'
+        IMAGE_TAG = 'latest'
     }
 
     triggers {
@@ -80,16 +82,23 @@ pipeline {
             }
         }
 
-        stage('Docker Push') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push mayssenharb/foyer-backendbuild
-                    '''
-                }
-            }
-        }
+           stage('Push dockerIMG') {
+               steps {
+                   echo 'push stage ... >>>>>>>>>>'
+                   withCredentials([usernamePassword(
+                       credentialsId: DOCKER_HUB_CREDENTIALS,
+                       usernameVariable: 'DOCKERHUB_USERNAME',
+                       passwordVariable: 'DOCKERHUB_PASSWORD'
+                   )]) {
+                       echo 'Login ...'
+                       sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+                       echo 'Tagging image...'
+                       sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                       echo 'Pushing docker image to docker hub...'
+                       sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                   }
+               }
+           }
 
         stage('Docker Compose') {
             steps {
