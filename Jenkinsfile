@@ -10,11 +10,10 @@ pipeline {
         SONAR_PROJECT_KEY = 'groupe5-arctic01-2425-molka-etudiant'
 
         NEXUS_REPO_URL = 'http://localhost:8081/repository/jenkins-nexus/'
-        NEXUS_CREDENTIALS_ID = 'nexus'   // ID que tu as mis dans tes Credentials Jenkins
+        NEXUS_CREDENTIALS_ID = 'nexus'
 
         DOCKER_IMAGE_NAME = 'groupe5-arctic01-2425'
         DOCKER_IMAGE_TAG = 'latest'
-        // Pas de DOCKER_REGISTRY pour l’instant → build et push local possible
     }
 
     stages {
@@ -25,25 +24,9 @@ pipeline {
             }
         }
 
-        stage('Prepare Maven settings.xml') {
+        stage('Get code from Repo') {
             steps {
-                echo "Preparing settings.xml for Nexus deployment"
-                withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
-                    sh '''
-                        mkdir -p ~/.m2
-                        cat > ~/.m2/settings.xml <<EOF
-<settings>
-  <servers>
-    <server>
-      <id>nexus</id>
-      <username>${NEXUS_USER}</username>
-      <password>${NEXUS_PASS}</password>
-    </server>
-  </servers>
-</settings>
-EOF
-                    '''
-                }
+                echo "Cloned repo and ready to build"
             }
         }
 
@@ -68,7 +51,7 @@ EOF
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Sonar Test') {
             steps {
                 echo "Running SonarQube analysis"
                 withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
@@ -80,7 +63,7 @@ EOF
             }
         }
 
-        stage('Package Artifact') {
+        stage('Create Package') {
             steps {
                 echo "Creating package (jar/war)"
                 sh 'mvn package'
@@ -90,6 +73,23 @@ EOF
         stage('Publish to Nexus') {
             steps {
                 echo "Publishing artifact to Nexus"
+                withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    sh '''
+                        mkdir -p ~/.m2
+                        cat > ~/.m2/settings.xml <<EOF
+<settings>
+  <servers>
+    <server>
+      <id>nexus</id>
+      <username>${NEXUS_USER}</username>
+      <password>${NEXUS_PASS}</password>
+    </server>
+  </servers>
+</settings>
+EOF
+                    '''
+                }
+
                 sh """
                     mvn deploy -DaltDeploymentRepository=nexus::default::${NEXUS_REPO_URL}
                 """
@@ -99,26 +99,16 @@ EOF
         stage('Docker Build') {
             steps {
                 echo "Building Docker image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-                sh """
-                    docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
-                """
+                sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
             }
         }
 
         stage('Docker Push') {
             steps {
-                echo "Pushing Docker image locally (no external registry configured)"
-
+                echo "Pushing Docker image (local push)"
                 sh 'echo "No external registry configured, image built locally."'
             }
         }
-        
-        stage('Check Docker Compose') {
-            steps {
-                sh 'docker compose version'
-            }
-        }
-
 
         stage('Docker Compose') {
             steps {
@@ -126,13 +116,17 @@ EOF
                 sh 'docker compose up -d'
             }
         }
+    }
 
-
-
-        stage('Post Actions') {
-            steps {
-                echo 'Pipeline completed successfully!'
-            }
+    post {
+        always {
+            echo 'Pipeline completed (post block).'
+        }
+        success {
+            echo '✔️ Pipeline finished successfully.'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs for details.'
         }
     }
 }
