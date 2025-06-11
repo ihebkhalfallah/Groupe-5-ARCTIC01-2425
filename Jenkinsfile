@@ -113,12 +113,13 @@ EOF
             }
         }
 
-       stage('Docker Compose') {
+        stage('Docker Compose') {
             steps {
                 echo "Running Docker Compose"
-                sh '/usr/bin/docker compose up -d'
-    }
-}
+                sh 'docker compose up -d'
+            }
+        }
+
 
 
         stage('Post Actions') {
