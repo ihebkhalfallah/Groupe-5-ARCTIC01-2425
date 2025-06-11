@@ -6,7 +6,7 @@ pipeline {
         BRANCH = 'iheb-universite'
         GIT_CREDENTIALS_ID = 'jenkins-pipeline'
         SONARQUBE_SERVER = 'http://localhost:9000/'
-        SONAR_TOKEN = '27d079ebe7229b74ee68d1f6f62d37579d723abc' // to be moved
+        SONAR_TOKEN = '708fc9b61e2b497e28e25d1af64c293236651373' // to be moved
         DOCKERHUB_CREDENTIALS = 'token-docker-hub'
         IMAGE_NAME = 'backend'
         IMAGE_TAG = 'latest'
@@ -19,22 +19,23 @@ pipeline {
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
-        
-        stage('Run env docker compose') {
-            steps {
-                echo "Starting services with Docker Compose..."
-                sh 'docker-compose -f docker/docker-compose.env.yml down || true'
-                sh 'docker-compose -f ./docker/docker-compose.env.yml up -d --build'
-                sh 'sleep 60'
-            }
-        }
-        
+
         stage('Clean target directory') {
             steps {
                 echo "Cleaning target directory..."
                 sh 'mvn clean'
             }
         }
+
+        stage('Run database') {
+            steps {
+                echo "Starting services with Docker Compose..."
+                // sh 'docker compose stop mysql'
+                sh 'docker compose up -d database phpmyadmin --build'
+                sh 'sleep 60'
+            }
+        }
+
         // stage('Start Test Database') {
         //     steps {
         //         echo "Starting temporary MySQL container..."
@@ -42,7 +43,6 @@ pipeline {
         //             docker run --name mysql-container \
         //                 -e MYSQL_DATABASE=foyer -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
         //                 -p 3306:3306 -d mysql:5.7
-        
         //             echo "Waiting for MySQL to initialize..."
         //             until docker exec mysql-container mysqladmin ping -h"localhost" --silent; do
         //                 echo "Waiting for MySQL..."
@@ -72,61 +72,61 @@ pipeline {
                 sh 'mvn test'
             }
         }
-        
+
         stage('Build JAR') {
             steps {
                 echo "Packaging the application..."
                 sh 'mvn package'
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 echo "Deploying artifact to remote repository..."
-                sh 'mvn deploy'
-            }
-        }
-        
-        stage('Stop and remove test database') {
-            steps {
-                echo "Stopping and removing test database container..."
-                sh '''
-                    docker stop test-container || true
-                    docker rm test-container || true
-                '''
+                sh 'mvn deploy -DskipTests'
             }
         }
 
-        stage('Building image'){
-            steps{
-                echo 'building ...';
+        // stage('Stop and remove test database') {
+        //     steps {
+        //         echo "Stopping and removing test database container..."
+        //         sh '''
+        //             docker stop test-container || true
+        //             docker rm test-container || true
+        //         '''
+        //     }
+        // }
+
+        stage('Building image') {
+            steps {
+                echo 'building ...'
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
-        
-        stage('Push docker image'){
-            steps{
+
+        stage('Push docker image') {
+            steps {
                 echo 'push stage ... >>>>>>>>>>'
-                withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS,
-                usernameVariable: 'DOCKERHUB_USERNAME', 
-                passwordVariable: 'DOCKERHUB_PASSWORD')]){
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKERHUB_CREDENTIALS,
+                    usernameVariable: 'DOCKERHUB_USERNAME',
+                    passwordVariable: 'DOCKERHUB_PASSWORD'
+                )]) {
                     echo 'Login ...'
                     sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
-
                     echo 'Tagging image...'
                     sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-
                     echo 'Pushing docker image to docker hub...'
                     sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
-        
+
         stage('Run prod docker compose') {
             steps {
                 echo "Starting services with Docker Compose..."
-                sh 'docker-compose -f docker/docker-compose.prod.yml down || true'
-                sh 'docker-compose -f docker/docker-compose.prod.yml up -d --build'
+                // sh 'docker compose stop backend'
+                sh 'docker compose up -d --build backend'
             }
         }
     }
@@ -138,9 +138,9 @@ pipeline {
         failure {
             echo '❌ Pipeline failed. Please check the logs.'
             // sh '''
-            //         docker stop mysql-container || true
-            //         docker rm mysql-container || true
-            //     '''
+            //     docker stop mysql-container || true
+            //     docker rm mysql-container || true
+            // '''
         }
         always {
             echo '🔁 Pipeline execution finished.'
