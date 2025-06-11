@@ -15,6 +15,16 @@ pipeline {
     }
 
     stages {
+
+        stage('Start Services with Docker Compose') {
+                steps {
+                    script {
+                        echo '🛠️ Lancement des services Docker (MySQL, SonarQube, Prometheus, etc.)'
+                        sh 'docker-compose -f docker-compose.yml up -d --build'
+                    }
+                }
+            }
+
         stage('Checkout') {
             steps {
                 checkout scm
