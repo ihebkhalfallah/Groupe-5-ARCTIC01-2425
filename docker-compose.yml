@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   backend:
-    image: foyer
+    image: groupe5-arctic01-2425:latest
     container_name: foyer-backend
     ports:
       - "8086:8086"
