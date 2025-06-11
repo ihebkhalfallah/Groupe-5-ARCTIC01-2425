@@ -117,7 +117,6 @@ EOF
             steps {
                 echo "Running Docker Compose"
                 sh 'docker compose up -d'
-'
             }
         }
 
