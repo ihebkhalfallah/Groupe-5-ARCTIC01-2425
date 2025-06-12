@@ -9,8 +9,6 @@ import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.DAO.Repositories.BlocRepository;
 import tn.esprit.spring.DAO.Repositories.ChambreRepository;
 import tn.esprit.spring.Services.Bloc.BlocService;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.TestMethodOrder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,11 +16,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@TestMethodOrder(OrderAnnotation.class)
 public class MockBlocServiceTest {
 
     @Mock
@@ -34,10 +30,7 @@ public class MockBlocServiceTest {
     @InjectMocks
     private BlocService blocService;
 
-    private static final Long TEST_BLOC_ID = 1L;
-
     @Test
-    @Order(1)
     public void testAddOrUpdate() {
         // Given
         Bloc input = Bloc.builder()
@@ -47,27 +40,25 @@ public class MockBlocServiceTest {
                 .build();
 
         Bloc saved = Bloc.builder()
-                .idBloc(TEST_BLOC_ID)
+                .idBloc(1L)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
                 .chambres(new ArrayList<>())
                 .build();
 
-        // When
         when(blocRepository.save(any(Bloc.class))).thenReturn(saved);
 
-        // Then
+        // When
         Bloc result = blocService.addOrUpdate(input);
 
+        // Then
         Assertions.assertNotNull(result.getIdBloc());
         Assertions.assertEquals("Bloc A", result.getNomBloc());
         Assertions.assertEquals(100, result.getCapaciteBloc());
-
         verify(blocRepository).save(any(Bloc.class));
     }
 
     @Test
-    @Order(2)
     public void testFindAll() {
         // Given
         Bloc b1 = Bloc.builder()
@@ -85,72 +76,62 @@ public class MockBlocServiceTest {
                 .build();
 
         List<Bloc> expectedList = Arrays.asList(b1, b2);
-
-        // When
         when(blocRepository.findAll()).thenReturn(expectedList);
 
-        // Then
+        // When
         List<Bloc> result = blocService.findAll();
 
+        // Then
         Assertions.assertEquals(2, result.size());
         Assertions.assertEquals("Bloc A", result.get(0).getNomBloc());
         Assertions.assertEquals("Bloc B", result.get(1).getNomBloc());
-
         verify(blocRepository).findAll();
     }
 
     @Test
-    @Order(3)
     public void testFindById() {
         // Given
+        Long testId = 1L;
         Bloc expected = Bloc.builder()
-                .idBloc(TEST_BLOC_ID)
+                .idBloc(testId)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
                 .chambres(new ArrayList<>())
                 .build();
 
+        when(blocRepository.findById(testId)).thenReturn(Optional.of(expected));
+
         // When
-        when(blocRepository.findById(TEST_BLOC_ID)).thenReturn(Optional.of(expected));
+        Bloc result = blocService.findById(testId);
 
         // Then
-        Bloc result = blocService.findById(TEST_BLOC_ID);
-
         Assertions.assertNotNull(result);
         Assertions.assertEquals("Bloc A", result.getNomBloc());
-        Assertions.assertEquals(TEST_BLOC_ID, result.getIdBloc());
-
-        verify(blocRepository).findById(TEST_BLOC_ID);
+        Assertions.assertEquals(testId, result.getIdBloc());
+        verify(blocRepository).findById(testId);
     }
 
     @Test
-    @Order(4)
     public void testDeleteById() {
         // Given
+        Long testId = 1L;
         Bloc existingBloc = Bloc.builder()
-                .idBloc(TEST_BLOC_ID)
+                .idBloc(testId)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
                 .chambres(new ArrayList<>())
                 .build();
 
-        // When
-        when(blocRepository.findById(TEST_BLOC_ID)).thenReturn(Optional.of(existingBloc));
+        when(blocRepository.findById(testId)).thenReturn(Optional.of(existingBloc));
         doNothing().when(chambreRepository).deleteAll(any());
-        doNothing().when(blocRepository).deleteById(TEST_BLOC_ID);
+        doNothing().when(blocRepository).delete(any(Bloc.class));
+
+        // When
+        blocService.deleteById(testId);
 
         // Then
-        blocService.deleteById(TEST_BLOC_ID);
-
-        verify(blocRepository).findById(TEST_BLOC_ID);
+        verify(blocRepository).findById(testId);
         verify(chambreRepository).deleteAll(any());
-        verify(blocRepository).deleteById(TEST_BLOC_ID);
-    }
-
-    @Test
-    @Order(5)
-    public void testAfterAllCleanup() {
-        // This test just verifies that the test suite runs successfully
-        Assertions.assertTrue(true);
+        verify(blocRepository).delete(any(Bloc.class));
     }
 }

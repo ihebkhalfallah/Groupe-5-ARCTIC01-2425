@@ -3,8 +3,6 @@ package tn.esprit.spring;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.Services.Bloc.IBlocService;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -16,11 +14,6 @@ import java.util.List;
 @TestMethodOrder(OrderAnnotation.class)
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:testdb",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
-@Transactional
 public class BlocServiceTest {
 
     @Autowired
