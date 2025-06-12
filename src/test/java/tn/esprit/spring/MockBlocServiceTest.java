@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.DAO.Repositories.BlocRepository;
+import tn.esprit.spring.DAO.Repositories.ChambreRepository;
 import tn.esprit.spring.Services.Bloc.BlocService;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -26,6 +27,9 @@ public class MockBlocServiceTest {
 
     @Mock
     private BlocRepository blocRepository;
+
+    @Mock
+    private ChambreRepository chambreRepository;
 
     @InjectMocks
     private BlocService blocService;
@@ -121,9 +125,13 @@ public class MockBlocServiceTest {
                 .build();
 
         when(blocRepository.findById(anyLong())).thenReturn(Optional.of(existingBloc));
+        doNothing().when(chambreRepository).deleteAll(any()); // Mock pour ChambreRepository
         doNothing().when(blocRepository).deleteById(anyLong());
 
         blocService.deleteById(savedBlocId);
+
+        verify(blocRepository).findById(anyLong());
+        verify(chambreRepository).deleteAll(any());
         verify(blocRepository).deleteById(anyLong());
     }
 
