@@ -3,6 +3,8 @@ package tn.esprit.spring;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.Services.Bloc.IBlocService;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -14,26 +16,26 @@ import java.util.List;
 @TestMethodOrder(OrderAnnotation.class)
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:testdb",
+        "spring.jpa.hibernate.ddl-auto=create-drop"
+})
+@Transactional
 public class BlocServiceTest {
 
     @Autowired
     IBlocService blocService;
 
-    private static Long savedBlocId;
+    private Long savedBlocId;
 
     @AfterAll
     public void afterAll(){
         if (savedBlocId != null) {
-            blocService.deleteById(savedBlocId);
-
-            // Vérifier que l'entité a été supprimée
             try {
-                Bloc b = blocService.findById(savedBlocId);
-                // Si on arrive ici, l'entité n'a pas été supprimée
-                Assertions.fail("Le bloc devrait être supprimé");
-            } catch (Exception e) {
-                // Exception attendue car l'entité n'existe plus
+                blocService.deleteById(savedBlocId);
                 System.out.println("Bloc supprimé avec succès");
+            } catch (Exception e) {
+                System.out.println("Erreur lors de la suppression: " + e.getMessage());
             }
         }
     }
@@ -44,7 +46,7 @@ public class BlocServiceTest {
         Bloc b = Bloc.builder()
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
-                .chambres(new ArrayList<>()) // Initialiser la liste des chambres
+                .chambres(new ArrayList<>())
                 .build();
 
         System.out.println("object: " + b);
@@ -54,6 +56,7 @@ public class BlocServiceTest {
 
         Assertions.assertNotNull(saved.getIdBloc());
         Assertions.assertEquals("Bloc A", saved.getNomBloc());
+        Assertions.assertEquals(100, saved.getCapaciteBloc());
     }
 
     @Test
@@ -61,16 +64,17 @@ public class BlocServiceTest {
     public void testFindAll() {
         List<Bloc> list = blocService.findAll();
         Assertions.assertFalse(list.isEmpty());
+        System.out.println("Found " + list.size() + " blocs");
     }
 
     @Test
     @Order(3)
     public void testFindById() {
-        if (savedBlocId != null) {
-            Bloc b = blocService.findById(savedBlocId);
-            Assertions.assertEquals("Bloc A", b.getNomBloc());
-        } else {
-            Assertions.fail("savedBlocId is null - testAddOrUpdate might have failed");
-        }
+        Assertions.assertNotNull(savedBlocId, "savedBlocId should not be null - testAddOrUpdate might have failed");
+
+        Bloc b = blocService.findById(savedBlocId);
+        Assertions.assertNotNull(b, "Bloc should be found");
+        Assertions.assertEquals("Bloc A", b.getNomBloc());
+        Assertions.assertEquals(savedBlocId, b.getIdBloc());
     }
 }

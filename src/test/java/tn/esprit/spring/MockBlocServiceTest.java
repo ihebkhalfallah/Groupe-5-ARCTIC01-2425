@@ -1,10 +1,10 @@
 package tn.esprit.spring;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.DAO.Repositories.BlocRepository;
 import tn.esprit.spring.DAO.Repositories.ChambreRepository;
@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
 public class MockBlocServiceTest {
 
@@ -34,11 +34,12 @@ public class MockBlocServiceTest {
     @InjectMocks
     private BlocService blocService;
 
-    private static Long savedBlocId = 1L;
+    private static final Long TEST_BLOC_ID = 1L;
 
     @Test
     @Order(1)
     public void testAddOrUpdate() {
+        // Given
         Bloc input = Bloc.builder()
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
@@ -46,18 +47,21 @@ public class MockBlocServiceTest {
                 .build();
 
         Bloc saved = Bloc.builder()
-                .idBloc(savedBlocId)
+                .idBloc(TEST_BLOC_ID)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
                 .chambres(new ArrayList<>())
                 .build();
 
+        // When
         when(blocRepository.save(any(Bloc.class))).thenReturn(saved);
 
+        // Then
         Bloc result = blocService.addOrUpdate(input);
 
         Assertions.assertNotNull(result.getIdBloc());
         Assertions.assertEquals("Bloc A", result.getNomBloc());
+        Assertions.assertEquals(100, result.getCapaciteBloc());
 
         verify(blocRepository).save(any(Bloc.class));
     }
@@ -65,6 +69,7 @@ public class MockBlocServiceTest {
     @Test
     @Order(2)
     public void testFindAll() {
+        // Given
         Bloc b1 = Bloc.builder()
                 .idBloc(1L)
                 .nomBloc("Bloc A")
@@ -81,8 +86,10 @@ public class MockBlocServiceTest {
 
         List<Bloc> expectedList = Arrays.asList(b1, b2);
 
+        // When
         when(blocRepository.findAll()).thenReturn(expectedList);
 
+        // Then
         List<Bloc> result = blocService.findAll();
 
         Assertions.assertEquals(2, result.size());
@@ -95,49 +102,55 @@ public class MockBlocServiceTest {
     @Test
     @Order(3)
     public void testFindById() {
+        // Given
         Bloc expected = Bloc.builder()
-                .idBloc(savedBlocId)
+                .idBloc(TEST_BLOC_ID)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
                 .chambres(new ArrayList<>())
                 .build();
 
-        when(blocRepository.findById(anyLong())).thenReturn(Optional.of(expected));
+        // When
+        when(blocRepository.findById(TEST_BLOC_ID)).thenReturn(Optional.of(expected));
 
-        Bloc result = blocService.findById(savedBlocId);
+        // Then
+        Bloc result = blocService.findById(TEST_BLOC_ID);
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals("Bloc A", result.getNomBloc());
-        Assertions.assertEquals(savedBlocId, result.getIdBloc());
+        Assertions.assertEquals(TEST_BLOC_ID, result.getIdBloc());
 
-        verify(blocRepository).findById(anyLong());
+        verify(blocRepository).findById(TEST_BLOC_ID);
     }
 
     @Test
     @Order(4)
     public void testDeleteById() {
-        // Mock de la méthode findById pour vérifier l'existence avant suppression
+        // Given
         Bloc existingBloc = Bloc.builder()
-                .idBloc(savedBlocId)
+                .idBloc(TEST_BLOC_ID)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
                 .chambres(new ArrayList<>())
                 .build();
 
-        when(blocRepository.findById(anyLong())).thenReturn(Optional.of(existingBloc));
-        doNothing().when(chambreRepository).deleteAll(any()); // Mock pour ChambreRepository
-        doNothing().when(blocRepository).deleteById(anyLong());
+        // When
+        when(blocRepository.findById(TEST_BLOC_ID)).thenReturn(Optional.of(existingBloc));
+        doNothing().when(chambreRepository).deleteAll(any());
+        doNothing().when(blocRepository).deleteById(TEST_BLOC_ID);
 
-        blocService.deleteById(savedBlocId);
+        // Then
+        blocService.deleteById(TEST_BLOC_ID);
 
-        verify(blocRepository).findById(anyLong());
+        verify(blocRepository).findById(TEST_BLOC_ID);
         verify(chambreRepository).deleteAll(any());
-        verify(blocRepository).deleteById(anyLong());
+        verify(blocRepository).deleteById(TEST_BLOC_ID);
     }
 
     @Test
     @Order(5)
     public void testAfterAllCleanup() {
+        // This test just verifies that the test suite runs successfully
         Assertions.assertTrue(true);
     }
 }
