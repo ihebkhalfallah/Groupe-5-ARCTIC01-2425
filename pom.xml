@@ -80,6 +80,7 @@
     <distributionManagement>
         <repository>
             <id>deployementRepo</id>
+            <name>Releases</name>
             <url>http://192.168.130.128:8081/repository/maven-releases/</url>
         </repository>
     </distributionManagement>

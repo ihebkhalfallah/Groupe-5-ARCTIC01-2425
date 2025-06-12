@@ -3,6 +3,7 @@ package tn.esprit.spring;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import tn.esprit.spring.DAO.Entities.Bloc;
 import tn.esprit.spring.DAO.Repositories.BlocRepository;
@@ -10,6 +11,7 @@ import tn.esprit.spring.Services.Bloc.BlocService;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -36,12 +38,14 @@ public class MockBlocServiceTest {
         Bloc input = Bloc.builder()
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
+                .chambres(new ArrayList<>())
                 .build();
 
         Bloc saved = Bloc.builder()
                 .idBloc(savedBlocId)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
+                .chambres(new ArrayList<>())
                 .build();
 
         when(blocRepository.save(any(Bloc.class))).thenReturn(saved);
@@ -61,12 +65,14 @@ public class MockBlocServiceTest {
                 .idBloc(1L)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
+                .chambres(new ArrayList<>())
                 .build();
 
         Bloc b2 = Bloc.builder()
                 .idBloc(2L)
                 .nomBloc("Bloc B")
                 .capaciteBloc(150)
+                .chambres(new ArrayList<>())
                 .build();
 
         List<Bloc> expectedList = Arrays.asList(b1, b2);
@@ -89,6 +95,7 @@ public class MockBlocServiceTest {
                 .idBloc(savedBlocId)
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
+                .chambres(new ArrayList<>())
                 .build();
 
         when(blocRepository.findById(anyLong())).thenReturn(Optional.of(expected));
@@ -105,7 +112,15 @@ public class MockBlocServiceTest {
     @Test
     @Order(4)
     public void testDeleteById() {
+        // Mock de la méthode findById pour vérifier l'existence avant suppression
+        Bloc existingBloc = Bloc.builder()
+                .idBloc(savedBlocId)
+                .nomBloc("Bloc A")
+                .capaciteBloc(100)
+                .chambres(new ArrayList<>())
+                .build();
 
+        when(blocRepository.findById(anyLong())).thenReturn(Optional.of(existingBloc));
         doNothing().when(blocRepository).deleteById(anyLong());
 
         blocService.deleteById(savedBlocId);

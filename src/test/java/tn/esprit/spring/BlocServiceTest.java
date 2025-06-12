@@ -8,6 +8,7 @@ import tn.esprit.spring.Services.Bloc.IBlocService;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -43,6 +44,7 @@ public class BlocServiceTest {
         Bloc b = Bloc.builder()
                 .nomBloc("Bloc A")
                 .capaciteBloc(100)
+                .chambres(new ArrayList<>()) // Initialiser la liste des chambres
                 .build();
 
         System.out.println("object: " + b);
@@ -64,7 +66,11 @@ public class BlocServiceTest {
     @Test
     @Order(3)
     public void testFindById() {
-        Bloc b = blocService.findById(savedBlocId);
-        Assertions.assertEquals("Bloc A", b.getNomBloc());
+        if (savedBlocId != null) {
+            Bloc b = blocService.findById(savedBlocId);
+            Assertions.assertEquals("Bloc A", b.getNomBloc());
+        } else {
+            Assertions.fail("savedBlocId is null - testAddOrUpdate might have failed");
+        }
     }
 }
