@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image : mayssenharb/foyer-backendbuild
+    image : mayssenharb/backendtest:latest
 
     #    build:
 #      context: .  # current directory

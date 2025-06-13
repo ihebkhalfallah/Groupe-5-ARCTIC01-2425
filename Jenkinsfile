@@ -76,39 +76,39 @@ pipeline {
                 }
             }
         }
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
-            }
-        }
+         stage('Docker Build') {
+             steps {
+                 sh """
+                     docker system prune -af || true
+                     docker build -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .
+                 """
+             }
+         }
 
-           stage('Push dockerIMG') {
-               steps {
-                   echo 'push stage ... >>>>>>>>>>'
-                   withCredentials([usernamePassword(
-                       credentialsId: DOCKER_HUB_CREDENTIALS,
-                       usernameVariable: 'DOCKERHUB_USERNAME',
-                       passwordVariable: 'DOCKERHUB_PASSWORD'
-                   )]) {
-                       echo 'Login ...'
-                       sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
-                       echo 'Tagging image...'
-                       sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                       echo 'Pushing docker image to docker hub...'
-                       sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                   }
-               }
-           }
+         stage('Push Docker Image') {
+             steps {
+                 withCredentials([usernamePassword(
+                     credentialsId: DOCKER_HUB_CREDENTIALS,
+                     usernameVariable: 'DOCKERHUB_USERNAME',
+                     passwordVariable: 'DOCKERHUB_PASSWORD'
+                 )]) {
+                     sh """
+                         echo ${DOCKERHUB_PASSWORD} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+                         docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+                     """
+                 }
+             }
+         }
 
-        stage('Docker Compose') {
-            steps {
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d'
-            }
-        }
-
-
-    }
+         stage('Docker Compose Up') {
+             steps {
+                 sh """
+                     docker-compose down || true
+                     docker-compose up -d --build
+                 """
+             }
+         }
+     }
 
     post {
         success {
