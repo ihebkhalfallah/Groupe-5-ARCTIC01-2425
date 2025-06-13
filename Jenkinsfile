@@ -22,25 +22,15 @@ pipeline {
 
         IMAGE_TAG = 'latest'
 
+        // Docker configuration
+
+        DOCKER_BUILDKIT = '1'
+
+        BUILDKIT_PROGRESS = 'plain'
+
     }
 
-   // triggers {
-
-     //   pollSCM('H/5 * * * *')
-
-    //}
-
     stages {
-
-     /*   stage('Checkout') {
-
-            steps {
-
-                checkout scm
-
-            }
-
-        }*/
 
         stage('Set Version') {
 
@@ -130,7 +120,23 @@ pipeline {
 
             steps {
 
-                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                script {
+
+                    echo 'Building Docker image...'
+
+                    sh """
+
+                        # Build with BuildKit for better performance
+
+                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+
+                        # Verify image was built
+
+                        docker images | grep ${IMAGE_NAME}
+
+                    """
+
+                }
 
             }
 
@@ -154,21 +160,101 @@ pipeline {
 
                     )]) {
 
-                        // Login to Docker Hub using token
+                        sh """
 
-                        sh "echo '${DOCKERHUB_TOKEN}' | docker login -u '${DOCKERHUB_USERNAME}' --password-stdin"
+                            set -e
 
-                        // Tag the image with username
+                            echo 'Logging in to Docker Hub...'
 
-                        sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                            echo '${DOCKERHUB_TOKEN}' | docker login -u '${DOCKERHUB_USERNAME}' --password-stdin
 
-                        // Push the image
+                            echo 'Tagging image...'
 
-                        sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
 
-                        // Logout for security
+                            echo 'Image details:'
 
-                        sh "docker logout"
+                            docker inspect ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} --format='{{.Size}}' | numfmt --to=iec
+
+                            echo 'Pushing image in chunks...'
+
+                            # Try pushing with specific registry
+
+                            docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+
+                        """
+
+                        // Verify push was successful
+
+                        sh """
+
+                            echo 'Verifying push...'
+
+                            docker pull ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} > /dev/null 2>&1 && echo 'Push verified successfully' || echo 'Push verification failed'
+
+                        """
+
+                    }
+
+                }
+
+            }
+
+            post {
+
+                always {
+
+                    sh 'docker logout || true'
+
+                }
+
+                failure {
+
+                    script {
+
+                        echo 'Docker push failed. Trying alternative approach...'
+
+                        // Alternative: Save image as tar and push
+
+                        withCredentials([usernamePassword(
+
+                            credentialsId: DOCKER_HUB_CREDENTIALS,
+
+                            usernameVariable: 'DOCKERHUB_USERNAME',
+
+                            passwordVariable: 'DOCKERHUB_TOKEN'
+
+                        )]) {
+
+                            sh """
+
+                                echo 'Attempting alternative push method...'
+
+                                # Save image to tar
+
+                                docker save ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} > image.tar
+
+                                # Load and push
+
+                                docker load < image.tar
+
+                                # Login again
+
+                                echo '${DOCKERHUB_TOKEN}' | docker login -u '${DOCKERHUB_USERNAME}' --password-stdin
+
+                                # Try push again with longer timeout
+
+                                timeout 600 docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+
+                                # Cleanup
+
+                                rm -f image.tar
+
+                                docker logout
+
+                            """
+
+                        }
 
                     }
 
@@ -196,9 +282,15 @@ pipeline {
 
         always {
 
-            // Clean up local images to save space
+            // Clean up Docker resources
 
-            sh 'docker system prune -f || true'
+            sh '''
+
+                docker system prune -f || true
+
+                docker volume prune -f || true
+
+            '''
 
         }
 
@@ -211,6 +303,24 @@ pipeline {
         failure {
 
             echo '❌ Pipeline failed.'
+
+            // Additional debugging information
+
+            sh '''
+
+                echo "=== Docker Info ==="
+
+                docker info || true
+
+                echo "=== Network Info ==="
+
+                netstat -rn || true
+
+                echo "=== DNS Info ==="
+
+                nslookup registry-1.docker.io || true
+
+            '''
 
         }
 
