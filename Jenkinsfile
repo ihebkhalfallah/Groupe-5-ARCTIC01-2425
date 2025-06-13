@@ -13,19 +13,7 @@ pipeline {
         IMAGE_TAG = 'latest'
     }
 
-   // triggers {
-     //   pollSCM('H/5 * * * *')
-    //}
-
     stages {
-
-
-
-     /*   stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }*/
 
         stage('Set Version') {
             steps {
@@ -53,7 +41,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo "Code analysis with SonarQube"
+                echo "🔍 Analyse du code avec SonarQube"
                 sh "mvn sonar:sonar -Dsonar.projectKey=Foyer -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
             }
         }
@@ -76,39 +64,43 @@ pipeline {
                 }
             }
         }
-         stage('Docker Build') {
-             steps {
-                 sh """
-                     docker system prune -af || true
-                     docker build -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .
-                 """
-             }
-         }
 
-         stage('Push Docker Image') {
-             steps {
-                 withCredentials([usernamePassword(
-                     credentialsId: DOCKER_HUB_CREDENTIALS,
-                     usernameVariable: 'DOCKERHUB_USERNAME',
-                     passwordVariable: 'DOCKERHUB_PASSWORD'
-                 )]) {
-                     sh """
-                         echo ${DOCKERHUB_PASSWORD} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
-                         docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
-                     """
-                 }
-             }
-         }
+        stage('Docker Build & Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_HUB_CREDENTIALS,
+                    usernameVariable: 'DOCKERHUB_USERNAME',
+                    passwordVariable: 'DOCKERHUB_PASSWORD'
+                )]) {
+                    sh """
+                        echo '🧹 Nettoyage Docker...'
+                        docker system prune -af || true
 
-         stage('Docker Compose Up') {
-             steps {
-                 sh """
-                     docker-compose down || true
-                     docker-compose up -d --build
-                 """
-             }
-         }
-     }
+                        echo '🐳 Construction de l'image Docker...'
+                        docker build -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .
+
+                        echo '🔐 Connexion à Docker Hub...'
+                        echo ${DOCKERHUB_PASSWORD} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+
+                        echo '📤 Push de l\'image Docker...'
+                        docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Docker Compose Up') {
+            steps {
+                sh """
+                    echo '⬇️ Arrêt des containers existants...'
+                    docker-compose down || true
+
+                    echo '🚀 Lancement avec Docker Compose...'
+                    docker-compose up -d --build
+                """
+            }
+        }
+    }
 
     post {
         success {
