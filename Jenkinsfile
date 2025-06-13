@@ -13,7 +13,19 @@ pipeline {
         IMAGE_TAG = 'latest'
     }
 
+   // triggers {
+     //   pollSCM('H/5 * * * *')
+    //}
+
     stages {
+
+
+
+     /*   stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }*/
 
         stage('Set Version') {
             steps {
@@ -41,7 +53,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo "🔍 Analyse du code avec SonarQube"
+                echo "Code analysis with SonarQube"
                 sh "mvn sonar:sonar -Dsonar.projectKey=Foyer -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
             }
         }
@@ -64,37 +76,38 @@ pipeline {
                 }
             }
         }
-
- stage('📤 Push Docker Image') {
+        stage('Docker Build') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: DOCKER_HUB_CREDENTIALS,
-                    usernameVariable: 'DOCKERHUB_USERNAME',
-                    passwordVariable: 'DOCKERHUB_PASSWORD'
-                )]) {
-                    sh '''
-                        echo "🔐 Connexion à Docker Hub..."
-                        echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-
-                        echo "🏷️ Tagging..."
-                        docker tag $IMAGE_NAME:$IMAGE_TAG "$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
-
-                        echo "📤 Push de l'image Docker..."
-                        docker push "$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
-                    '''
-                }
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
 
-        stage('🚀 Docker Compose Up') {
+           stage('Push dockerIMG') {
+               steps {
+                   echo 'push stage ... >>>>>>>>>>'
+                   withCredentials([usernamePassword(
+                       credentialsId: DOCKER_HUB_CREDENTIALS,
+                       usernameVariable: 'DOCKERHUB_USERNAME',
+                       passwordVariable: 'DOCKERHUB_PASSWORD'
+                   )]) {
+                       echo 'Login ...'
+                       sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+                       echo 'Tagging image...'
+                       sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                       echo 'Pushing docker image to docker hub...'
+                       sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                   }
+               }
+           }
+
+        stage('Docker Compose') {
             steps {
-                sh '''
-                    echo "🔁 Redémarrage Docker Compose..."
-                    docker-compose down || true
-                    docker-compose up -d --build
-                '''
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d'
             }
         }
+
+
     }
 
     post {
