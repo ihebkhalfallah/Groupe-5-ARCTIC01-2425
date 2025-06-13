@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image: ihebkhalfallah777/backend
+    image: alakhal1919/backend
     container_name: backend
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://database:3306/foyer?createDatabaseIfNotExist=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
