@@ -8,8 +8,8 @@ pipeline {
         SONARQUBE_SERVER = 'http://localhost:9000/'
         SONAR_TOKEN = 'b6c4f4e1c1c5cce48fed642c92ac36d93b98f6f0'
         VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
-        DOCKER_HUB_CREDENTIALS = 'dockerhub'
-        IMAGE_NAME = 'backendtest'
+        DOCKER_HUB_CREDENTIALS = 'dockerhubtahani'
+        IMAGE_NAME = 'backendtesttoutou'
         IMAGE_TAG = 'latest'
     }
 
