@@ -86,7 +86,14 @@ public class ChambreService implements IChambreService {
         return listChambreDispo;
     }
 
-
+    private LocalDate calculerDateDebutAnneeUniversitaire() {
+        int year = LocalDate.now().getYear() % 100;
+        if (LocalDate.now().getMonthValue() <= 7) {
+            return LocalDate.of(2000 + (year - 1), 9, 15);
+        } else {
+            return LocalDate.of(2000 + year, 9, 15);
+        }
+    }
 
     private LocalDate calculerDateFinAnneeUniversitaire() {
         int year = LocalDate.now().getYear() % 100;
