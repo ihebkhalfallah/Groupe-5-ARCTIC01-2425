@@ -16,30 +16,30 @@ public class UniversiteRestController {
     IUniversiteService service;
 
     @PostMapping("addOrUpdate")
-    Universite addOrUpdate(@RequestBody Universite u) {return service.addOrUpdate(u);}
+    public Universite addOrUpdate(@RequestBody Universite u) {return service.addOrUpdate(u);}
 
     @GetMapping("findAll")
-    List<Universite> findAll() {
+    public List<Universite> findAll() {
         return service.findAll();
     }
 
     @GetMapping("findById")
-    Universite findById(@RequestParam long id) {
+    public Universite findById(@RequestParam long id) {
         return service.findById(id);
     }
 
     @DeleteMapping("delete")
-    void delete(@RequestBody Universite u) {
+    public void delete(@RequestBody Universite u) {
         service.delete(u);
     }
 
     @DeleteMapping("deleteById")
-    void deleteById(@RequestParam long id) {
+    public void deleteById(@RequestParam long id) {
         service.deleteById(id);
     }
 
     @PostMapping("ajouterUniversiteEtSonFoyer")
-    Universite ajouterUniversiteEtSonFoyer(@RequestBody Universite u)
+    public Universite ajouterUniversiteEtSonFoyer(@RequestBody Universite u)
     {
         return service.ajouterUniversiteEtSonFoyer(u);
     }
