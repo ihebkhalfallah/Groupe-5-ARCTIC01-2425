@@ -65,39 +65,34 @@ pipeline {
             }
         }
 
-        stage('Docker Build & Push') {
+ stage('📤 Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: DOCKER_HUB_CREDENTIALS,
                     usernameVariable: 'DOCKERHUB_USERNAME',
                     passwordVariable: 'DOCKERHUB_PASSWORD'
                 )]) {
-                    sh """
-                        echo '🧹 Nettoyage Docker...'
-                        docker system prune -af || true
+                    sh '''
+                        echo "🔐 Connexion à Docker Hub..."
+                        echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
 
-                        echo '🐳 Construction de l'image Docker...'
-                        docker build -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .
+                        echo "🏷️ Tagging..."
+                        docker tag $IMAGE_NAME:$IMAGE_TAG "$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
 
-                        echo '🔐 Connexion à Docker Hub...'
-                        echo ${DOCKERHUB_PASSWORD} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
-
-                        echo '📤 Push de l\'image Docker...'
-                        docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
-                    """
+                        echo "📤 Push de l'image Docker..."
+                        docker push "$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG"
+                    '''
                 }
             }
         }
 
-        stage('Docker Compose Up') {
+        stage('🚀 Docker Compose Up') {
             steps {
-                sh """
-                    echo '⬇️ Arrêt des containers existants...'
+                sh '''
+                    echo "🔁 Redémarrage Docker Compose..."
                     docker-compose down || true
-
-                    echo '🚀 Lancement avec Docker Compose...'
                     docker-compose up -d --build
-                """
+                '''
             }
         }
     }
