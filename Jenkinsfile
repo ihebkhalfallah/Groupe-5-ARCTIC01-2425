@@ -3,97 +3,119 @@ pipeline {
 
     environment {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
-        BRANCH = 'molka-etudiant'
-        GIT_CREDENTIALS_ID = 'jenkins-pipeline'
-        SONARQUBE_SERVER = 'http://localhost:9000'
-        SONAR_TOKEN = '342bac35c40ab46e69046cda2e7a5e8c7b13c313'
+        BRANCH = 'amine-Reservation'
+        GIT_CREDENTIALS_ID = 'gittoken'
+        SONARQUBE_SERVER = 'http://localhost:9000/'
+        SONAR_TOKEN = 'c86ba9f6bdb5953f9774f142298f9eb3f40bd5fa'
+        DOCKERHUB_CREDENTIALS = 'dockerhubtoken'
+        IMAGE_NAME = 'backend'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
-        stage('Cloner le dépôt Git') {
+        stage('Clone repository') {
             steps {
-                echo "Clonage de la branche '${BRANCH}' depuis le dépôt '${GIT_REPO}'"
+                echo "Cloning branch '${BRANCH}' from '${GIT_REPO}'"
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
-        stage('Nettoyage et compilation') {
+        stage('Clean target directory') {
             steps {
-                echo "Exécution de mvn clean compile"
-                sh 'mvn clean compile'
+                echo "Cleaning target directory..."
+                sh 'mvn clean'
             }
         }
 
-        stage('Analyse SonarQube') {
+        stage('Run database') {
             steps {
-                echo "Lancement de l’analyse SonarQube"
-                sh """
-                    mvn sonar:sonar \
-                        -Dsonar.projectKey=molka-projet \
-                        -Dsonar.host.url=${SONARQUBE_SERVER} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                """
+                echo "Starting services with Docker Compose..."
+                sh 'docker compose up -d database phpmyadmin --build'
+                sh 'sleep 60'
             }
         }
 
-        stage('Lancer un conteneur MySQL') {
+
+
+        stage('Compile source code') {
             steps {
-                echo "Démarrage d’un conteneur MySQL pour les tests"
-                sh '''
-                    docker run --rm --name mysql-test-container \
-                        -e MYSQL_ROOT_PASSWORD=root \
-                        -e MYSQL_DATABASE=testdb \
-                        -e MYSQL_USER=testuser \
-                        -e MYSQL_PASSWORD=testpass \
-                        -p 3306:3306 -d mysql:5.7
-                '''
-                echo "Pause pour laisser MySQL démarrer correctement"
-                sh 'sleep 25'
+                echo "Compiling source code..."
+                sh 'mvn compile'
             }
         }
 
-        stage('Exécution des tests unitaires') {
+        stage('SonarQube analysis') {
             steps {
-                echo "Lancement des tests avec Maven"
+                echo "Code analysis"
+                sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
                 sh 'mvn test'
             }
         }
 
-        stage('Création du package') {
+        stage('Build JAR') {
             steps {
-                echo "Génération du package (JAR/WAR)"
+                echo "Packaging the application..."
                 sh 'mvn package'
             }
         }
 
-        stage('Déploiement avec Docker Compose') {
+        stage('Deploy') {
             steps {
-                echo "Exécution de docker-compose up"
-                sh '''
-                    docker-compose down || true
-                    docker-compose up -d --build
-                '''
+                echo "Deploying artifact to remote repository..."
+                sh 'mvn deploy -DskipTests'
             }
         }
 
-        stage('Déploiement final') {
+
+        stage('Building image') {
             steps {
-                echo "Déploiement de l’application via Maven deploy"
-                sh 'mvn deploy'
+                echo 'building ...'
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('Push docker image') {
+            steps {
+                echo 'push stage ... >>>>>>>>>>'
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKERHUB_CREDENTIALS,
+                    usernameVariable: 'DOCKERHUB_USERNAME',
+                    passwordVariable: 'DOCKERHUB_PASSWORD'
+                )]) {
+                    echo 'Login ...'
+                    sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+                    echo 'Tagging image...'
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    echo 'Pushing docker image to docker hub...'
+                    sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Run prod docker compose') {
+            steps {
+                echo "Starting services with Docker Compose..."
+                sh 'docker compose up -d --build backend'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline exécuté avec succès.'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
-            echo 'Le pipeline a échoué.'
+            echo '❌ Pipeline failed. Please check the logs.'
         }
         always {
-            echo 'Nettoyage post-exécution.'
-            sh 'docker-compose down || true'
+            echo '🔁 Pipeline execution finished.'
+            echo 'Cleaning up Docker containers...'
         }
     }
 }
