@@ -115,16 +115,17 @@ EOF
             }
         }
 
-        stage('Docker Compose') {
-            steps {
+      stage('Docker Compose') {
+         steps {
                 echo "Cleaning up old container and running Docker Compose"
                 sh '''
                     docker ps -a --filter "ancestor=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}" --format "{{.ID}}" | xargs -r docker rm -f
+                    docker rm -f foyer-backend-1 || true
                     BUILD_ID=${BUILD_ID} docker compose up -d
                 '''
             }
         }
-    }
+
 
     post {
         always {
