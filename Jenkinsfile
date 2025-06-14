@@ -119,9 +119,8 @@ EOF
 
         stage('Docker Compose') {
             steps {
-                echo "Restarting containers using docker-compose"
-                sh 'docker compose down || true'
-                sh 'docker compose up -d'
+                echo "Running Docker Compose"
+               sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
             }
         }
     }
