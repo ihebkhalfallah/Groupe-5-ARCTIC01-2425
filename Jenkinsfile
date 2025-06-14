@@ -46,9 +46,11 @@ pipeline {
             }
         }
 
-        stage('Maven Verify (tests + jacoco report)') {
-            steps {
-                echo "Running mvn verify with test profile (generates jacoco report)"
+        stage('Maven Test') {
+             steps {
+                echo "Running mvn test with test profile"
+                sh 'mvn test -Dspring.profiles.active=test'
+                echo "Running mvn verify to generate JaCoCo report"
                 sh 'mvn verify -Dspring.profiles.active=test'
             }
         }
