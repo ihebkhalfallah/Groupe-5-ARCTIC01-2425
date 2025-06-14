@@ -19,6 +19,21 @@ services:
     networks:
       - app-network
     # restart: always
+  frontend:
+    image: ihebkhalfallah777/front:latest
+    container_name: frontend
+    environment:
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_UNIVERSITE_API_URL=http://backend:8086/Foyer/universite/addOrUpdate
+      - NEXT_PUBLIC_UNIVERSITE_FINDALL_API_URL=http://backend:8086/Foyer/universite/findAll
+      - NEXT_PUBLIC_STUDENT_API_URL=http://backend:8086/Foyer/student/addOrUpdate
+      - NEXT_PUBLIC_API_BASE_URL=http://backend:8086/Foyer
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
   database:
     image: mysql:5.7
