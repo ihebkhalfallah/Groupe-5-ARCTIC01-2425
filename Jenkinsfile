@@ -24,14 +24,13 @@ pipeline {
             }
         }
 
-         stage('Get code from Repo') {
+        stage('Get code from Repo') {
             steps {
                 echo "Cloned repo and ready to build"
                 echo "Workspace is: ${env.WORKSPACE}"
                 sh 'ls -la'
             }
         }
-
 
         stage('Maven Clean') {
             steps {
@@ -40,38 +39,39 @@ pipeline {
             }
         }
 
-        stage('Maven Build') {
+        stage('Maven Compile') {
             steps {
                 echo "Running mvn compile"
                 sh 'mvn compile'
             }
         }
 
-       stage('Maven Test') {
-    steps {
-        sh 'mvn clean verify -Dspring.profiles.active=test'
-    }
-}
-
-
-       stage('Sonar Test') {
-        steps {
-            withSonarQubeEnv('SonarQube') {
-                sh '''
-                    mvn sonar:sonar \
-                        -Dsonar.projectKey=Foyer \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-                '''
+        stage('Maven Verify (tests + jacoco report)') {
+            steps {
+                echo "Running mvn verify with test profile (generates jacoco report)"
+                sh 'mvn verify -Dspring.profiles.active=test'
             }
         }
-    }
 
-
-        stage('Create Package') {
+        stage('SonarQube Analysis') {
             steps {
-                echo "Creating package (jar/war) without tests"
+                withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
+                    echo "Running SonarQube analysis"
+                    sh """
+                        ls -l target/site/jacoco/jacoco.xml
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                    """
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo "Packaging without tests"
                 sh 'mvn package -Dmaven.test.skip=true'
             }
         }
@@ -95,7 +95,6 @@ pipeline {
 EOF
                     '''
                 }
-
                 sh """
                     mvn deploy -Dmaven.test.skip=true -DaltDeploymentRepository=nexus::default::${NEXUS_REPO_URL}
                 """
@@ -119,8 +118,7 @@ EOF
         stage('Docker Compose') {
             steps {
                 echo "Running Docker Compose"
-               sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
-
+                sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
             }
         }
     }
