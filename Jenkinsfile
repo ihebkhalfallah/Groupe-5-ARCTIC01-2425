@@ -52,6 +52,11 @@ pipeline {
                 sh 'mvn verify -Dspring.profiles.active=test'
             }
         }
+        stage('Check Jacoco') {
+            steps {
+                sh 'ls -lh target/site/jacoco/'
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
