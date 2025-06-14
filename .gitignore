@@ -22,6 +22,7 @@ target/
 
 prometheus.yml
 *mvn*
+.gitattributes
 
 ### NetBeans ###
 /nbproject/private/
