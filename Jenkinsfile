@@ -7,17 +7,23 @@ pipeline {
         GIT_CREDENTIALS_ID = 'ce4c016c-23f3-4d95-8efb-716e9aacd9cc'
         SONARQUBE_SERVER = 'http://localhost:9000/'
         SONAR_TOKEN = 'b6c4f4e1c1c5cce48fed642c92ac36d93b98f6f0'
-        VERSION = "1.4.${BUILD_ID}-SNAPSHOT"
+        VERSION = "1.4.0-${env.BUILD_ID}-SNAPSHOT"
         DOCKER_HUB_CREDENTIALS = 'mayssendockerhub'
         IMAGE_NAME = 'backendtest'
-        IMAGE_TAG = "1.4.${BUILD_ID}"
+        IMAGE_TAG = 'latest'
     }
+
+   // triggers {
+     //   pollSCM('H/5 * * * *')
+    //}
 
     stages {
 
+
+
         stage('Checkout') {
             steps {
-                git branch: "${BRANCH}", credentialsId: "${GIT_CREDENTIALS_ID}", url: "${GIT_REPO}"
+                checkout scm
             }
         }
 
@@ -47,7 +53,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo "🔍 Code analysis with SonarQube"
+                echo "Code analysis with SonarQube"
                 sh "mvn sonar:sonar -Dsonar.projectKey=Foyer -Dsonar.host.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
             }
         }
@@ -70,47 +76,38 @@ pipeline {
                 }
             }
         }
-
         stage('Docker Build') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
 
-        stage('Push Docker Image') {
-            steps {
-                echo '📦 Push Docker image to Docker Hub'
-                withCredentials([usernamePassword(
-                    credentialsId: DOCKER_HUB_CREDENTIALS,
-                    usernameVariable: 'DOCKERHUB_USERNAME',
-                    passwordVariable: 'DOCKERHUB_PASSWORD'
-                )]) {
-                    retry(2) {
-                        timeout(time: 3, unit: 'MINUTES') {
-                            sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin"
-                            sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                            sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
-                            sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest"
-                            sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest"
-                        }
-                    }
-                }
-            }
-        }
+           stage('Push dockerIMG') {
+               steps {
+                   echo 'push stage ... >>>>>>>>>>'
+                   withCredentials([usernamePassword(
+                       credentialsId: DOCKER_HUB_CREDENTIALS,
+                       usernameVariable: 'DOCKERHUB_USERNAME',
+                       passwordVariable: 'DOCKERHUB_PASSWORD'
+                   )]) {
+                       echo 'Login ...'
+                       sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+                       echo 'Tagging image...'
+                       sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                       echo 'Pushing docker image to docker hub...'
+                       sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                   }
+               }
+           }
 
-        stage('Docker Compose Up') {
+        stage('Docker Compose') {
             steps {
-                echo '🚀 Starting services with Docker Compose'
                 sh 'docker-compose down || true'
                 sh 'docker-compose up -d'
             }
         }
 
-        stage('Clean Docker Images') {
-            steps {
-                sh 'docker image prune -f'
-            }
-        }
+
     }
 
     post {
@@ -119,9 +116,6 @@ pipeline {
         }
         failure {
             echo '❌ La pipeline a échoué.'
-        }
-        always {
-            cleanWs()
         }
     }
 }
