@@ -54,17 +54,19 @@ pipeline {
             }
         }
 
-        stage('Sonar Test') {
-            steps {
-                echo "Running SonarQube analysis"
-                withSonarQubeEnv("${SONARQUBE_SERVER_NAME}") {
-                    sh """
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY}
-                    """
-                }
+       stage('Sonar Test ') {
+        steps {
+            withSonarQubeEnv('SonarQube') {
+                sh '''
+                    mvn verify sonar:sonar \
+                        -Dsonar.projectKey=Foyer \
+                        -Dsonar.host.url=$SONAR_HOST_URL \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                '''
             }
         }
+    }
 
         stage('Create Package') {
             steps {
