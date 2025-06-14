@@ -54,11 +54,11 @@ pipeline {
             }
         }
 
-       stage('Sonar Test ') {
+       stage('Sonar Test') {
         steps {
             withSonarQubeEnv('SonarQube') {
                 sh '''
-                    mvn verify sonar:sonar \
+                    mvn sonar:sonar \
                         -Dsonar.projectKey=Foyer \
                         -Dsonar.host.url=$SONAR_HOST_URL \
                         -Dsonar.login=$SONAR_AUTH_TOKEN \
@@ -67,6 +67,7 @@ pipeline {
             }
         }
     }
+
 
         stage('Create Package') {
             steps {
