@@ -118,9 +118,10 @@ EOF
         }
 
         stage('Docker Compose') {
-            steps {
+         steps {
                 echo "Running Docker Compose"
                sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
+
             }
         }
     }
