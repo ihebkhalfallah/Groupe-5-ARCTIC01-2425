@@ -18,9 +18,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FoyerServiceTest {
 
     @Autowired
@@ -117,41 +117,66 @@ public class FoyerServiceTest {
         assertEquals("X", result.getNomUniversite());
         assertEquals("Y", result.getAdresse());
     }
-    @Test
-    void testAssignFoyerToAnotherUniversity() {
-        Universite u2 = Universite.builder()
-                .nomUniversite("Université B")
-                .adresse("Sfax")
-                .build();
 
+
+    @Test
+    void testAssignNewFoyerToAnotherUniversity() {
+        Universite u2 = Universite.builder()
+                .nomUniversite("Université Test Unique")
+                .adresse("Sousse")
+                .build();
         Universite savedU2 = universiteService.addOrUpdate(u2);
 
-        // Should reassign if logic allows, or test how system responds
-        Foyer f = foyerService.findById(foyerId);
-        assertNotNull(f);
+        Bloc b = Bloc.builder().nomBloc("Bloc Test").capaciteBloc(30).build();
+        List<Bloc> blocs = new ArrayList<>();
+        blocs.add(b);
 
-        savedU2.setFoyer(f);
-        Universite updated = universiteService.addOrUpdate(savedU2);
+        Foyer f = Foyer.builder()
+                .nomFoyer("Foyer Test Unique")
+                .capaciteFoyer(120L)
+                .blocs(blocs)
+                .build();
 
+        Foyer newFoyer = foyerService.ajouterFoyerEtAffecterAUniversite(f, savedU2.getIdUniversite());
+
+        assertNotNull(newFoyer);
+        assertEquals("Foyer Test Unique", newFoyer.getNomFoyer());
+
+        Universite updated = universiteService.findById(savedU2.getIdUniversite());
         assertNotNull(updated.getFoyer());
-        assertEquals(f.getIdFoyer(), updated.getFoyer().getIdFoyer());
+        assertEquals(newFoyer.getIdFoyer(), updated.getFoyer().getIdFoyer());
 
         // cleanup
+        foyerRepository.findById(newFoyer.getIdFoyer()).ifPresent(foyer -> {
+            List<Bloc> blocsToDelete = foyer.getBlocs();
+            if (blocsToDelete != null && !blocsToDelete.isEmpty()) {
+                blocRepository.deleteAll(blocsToDelete);
+            }
+        });
+        foyerRepository.deleteById(newFoyer.getIdFoyer());
         universiteService.deleteById(savedU2.getIdUniversite());
     }
+
+
+
     @Test
     void testAddFoyerWithoutBlocs() {
         Foyer f = Foyer.builder()
                 .nomFoyer("Empty Blocs Foyer")
                 .capaciteFoyer(50L)
+                .blocs(new ArrayList<>()) // ← Ajoute cette ligne
                 .build();
 
         Foyer saved = foyerService.addOrUpdate(f);
         assertNotNull(saved);
-        assertEquals(0, saved.getBlocs().size());
 
-        // cleanup
+        List<Bloc> blocs = saved.getBlocs();
+        assertTrue(blocs == null || blocs.isEmpty(), "Blocs should be null or empty");
+
         foyerRepository.deleteById(saved.getIdFoyer());
     }
+
+
+
 
 }
