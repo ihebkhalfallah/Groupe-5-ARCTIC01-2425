@@ -52,7 +52,6 @@ pipeline {
                 sh 'mvn verify -Dspring.profiles.active=test'
             }
         }
-    
 
         stage('SonarQube Analysis') {
             steps {
@@ -116,16 +115,16 @@ EOF
             }
         }
 
-     stage('Docker Compose') {
-        steps {
-            echo "Cleaning up old container and running Docker Compose"
-            sh '''
-                docker ps -a --filter "ancestor=groupe5-arctic01-2425:latest" --format "{{.ID}}" | xargs -r docker rm -f
-                BUILD_ID=${BUILD_ID} docker compose up -d
-            '''
+        stage('Docker Compose') {
+            steps {
+                echo "Cleaning up old container and running Docker Compose"
+                sh '''
+                    docker ps -a --filter "ancestor=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}" --format "{{.ID}}" | xargs -r docker rm -f
+                    BUILD_ID=${BUILD_ID} docker compose up -d
+                '''
+            }
         }
     }
-
 
     post {
         always {
