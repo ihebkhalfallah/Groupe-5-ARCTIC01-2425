@@ -1,3 +1,19 @@
+def get_change_html() {
+    def changeLogSets = currentBuild.changeSets
+    def html = ""
+    
+    for (changeLogSet in changeLogSets) {
+        for (entry in changeLogSet.items) {
+            html += "<li>${entry.commitId.substring(0,8)}: ${entry.msg} - <em>${entry.author}</em></li>"
+        }
+    }
+    
+    if (html == "") {
+        html = "<li>No changes detected</li>"
+    }
+    return html
+}
+
 pipeline {
     agent any
     
