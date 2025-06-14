@@ -117,10 +117,8 @@ EOF
 
         stage('Docker Compose') {
             steps {
-                echo "Stopping any existing backend container and starting new containers with docker-compose"
-                sh '''
-                    docker rm -f foyer-backend || true
-                    BUILD_ID=${BUILD_ID} docker compose up -d
+                echo "Running Docker Compose"
+               sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
                 '''
             }
         }
