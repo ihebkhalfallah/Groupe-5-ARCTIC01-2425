@@ -32,7 +32,7 @@ public class ReservationRestController {
     }
 
     // ......../1
-    public @DeleteMapping("deleteById/{id}")
+    @DeleteMapping("deleteById/{id}")
     public void deleteById(@PathVariable String id) {
         service.deleteById(id);
     }
