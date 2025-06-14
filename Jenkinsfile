@@ -117,10 +117,14 @@ EOF
 
       stage('Docker Compose') {
             steps {
-                echo "Stopping and removing existing containers"
-                sh 'docker-compose down'
-                echo "Starting containers"
-                sh 'docker-compose up -d'
+                echo "Stopping any existing backend container and starting new containers with docker-compose"
+                sh '''
+                    # Stop and remove container if exists (ignore errors)
+                    docker rm -f foyer-backend || true
+        
+                    # Start containers in detached mode
+                    BUILD_ID=${BUILD_ID} docker compose up -d
+                '''
             }
         }
 
