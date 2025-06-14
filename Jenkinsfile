@@ -22,7 +22,7 @@ pipeline {
                 echo "Checking out branch '${BRANCH}' from '${GIT_REPO}'"
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
-        }
+        }}
 
         stage('Get code from Repo') {
             steps {
@@ -117,11 +117,10 @@ EOF
 
         stage('Docker Compose') {
             steps {
-                echo "Running Docker Compose"
-               sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
-                '''
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d'
             }
-        
+        }
     }
 
     post {
