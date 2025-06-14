@@ -119,7 +119,7 @@ pipeline {
         stage('Run prod docker compose') {
             steps {
                 echo "Starting services with Docker Compose..."
-                sh 'docker compose up -d --build backend front'
+                sh 'docker compose up -d --build backend frontend'
             }
         }
     }
