@@ -52,11 +52,7 @@ pipeline {
                 sh 'mvn verify -Dspring.profiles.active=test'
             }
         }
-        stage('Check Jacoco') {
-            steps {
-                sh 'ls -lh target/site/jacoco/'
-            }
-        }
+    
 
         stage('SonarQube Analysis') {
             steps {
@@ -120,13 +116,16 @@ EOF
             }
         }
 
-        stage('Docker Compose') {
-            steps {
-                echo "Running Docker Compose"
-                sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
-            }
+     stage('Docker Compose') {
+        steps {
+            echo "Cleaning up old container and running Docker Compose"
+            sh '''
+                docker ps -a --filter "ancestor=groupe5-arctic01-2425:latest" --format "{{.ID}}" | xargs -r docker rm -f
+                BUILD_ID=${BUILD_ID} docker compose up -d
+            '''
         }
     }
+
 
     post {
         always {
