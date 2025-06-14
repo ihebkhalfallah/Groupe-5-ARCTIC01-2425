@@ -15,7 +15,7 @@
 
     <groupId>tn.esprit.spring</groupId>
     <artifactId>Foyer</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.2</version>
     <name>Foyer</name>
     <description>Foyer project</description>
 
