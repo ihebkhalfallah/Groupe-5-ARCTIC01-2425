@@ -1,166 +1,124 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven-3.9'
-        jdk 'JDK-11'
-    }
-
     environment {
-        DOCKER_IMAGE = "zouhourrouissi/foyer:latest"
-        DOCKER_TAG = "${BUILD_NUMBER}"
-        SONAR_SCANNER_HOME = tool 'SonarQube-Scanner'
+        GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
+        BRANCH = 'zouhour-bloc-TEST'
+        GIT_CREDENTIALS_ID = 'Github token'
+        SONARQUBE_SERVER = 'http://localhost:9000/'
+        SONAR_TOKEN = 'sqa_4dd18f4166c832547eabb4ec673277d9c0471341'
+        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+        IMAGE_NAME = 'foyer'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone repository') {
             steps {
-                git branch: 'main',
-                    credentialsId: 'github-token',
-                    url: 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
+                echo "Cloning branch '${BRANCH}' from '${GIT_REPO}'"
+                git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
 
-        stage('Clean') {
+        stage('Clean target directory') {
             steps {
+                echo "Cleaning target directory..."
                 sh 'mvn clean'
             }
         }
 
-        stage('Compile') {
+        stage('Run database') {
             steps {
+                echo "Starting services with Docker Compose..."
+                // sh 'docker compose stop mysql'
+                sh 'docker compose up -d database phpmyadmin --build'
+                sh 'sleep 60'
+            }
+        }
+
+
+        stage('Compile source code') {
+            steps {
+                echo "Compiling source code..."
                 sh 'mvn compile'
+            }
+        }
+
+        stage('SonarQube analysis') {
+            steps {
+                echo "Code analysis"
+                sh "mvn sonar:sonar -Dsonar.url=${SONARQUBE_SERVER} -Dsonar.login=${SONAR_TOKEN}"
             }
         }
 
         stage('Test') {
             steps {
+                echo "Running tests..."
                 sh 'mvn test'
             }
-            post {
-                always {
-                    publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
-                    publishCoverage adapters: [jacocoAdapter('target/site/jacoco/jacoco.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
-                }
-            }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Build JAR') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        $SONAR_SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=demo \
-                        -Dsonar.projectName=demo \
-                        -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=src/main/java \
-                        -Dsonar.tests=src/test/java \
-                        -Dsonar.language=java \
-                        -Dsonar.java.binaries=target/classes \
-                        -Dsonar.java.test.binaries=target/test-classes \
-                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-                    '''
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
-        stage('Package') {
-            steps {
+                echo "Packaging the application..."
                 sh 'mvn package -DskipTests'
             }
         }
 
-        stage('Deploy to Nexus') {
+        stage('Deploy') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'nexus-credentials', passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
-                    sh '''
-                        mvn deploy -DskipTests \
-                        -Dmaven.repo.local=/tmp/.m2 \
-                        -s /tmp/settings.xml
-                    '''
+                echo "Deploying artifact to remote repository..."
+                sh 'mvn deploy -DskipTests'
+            }
+        }
+
+
+        stage('Building image') {
+            steps {
+                echo 'building ...'
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('Push docker image') {
+            steps {
+                echo 'push stage ... >>>>>>>>>>'
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKERHUB_CREDENTIALS,
+                    usernameVariable: 'DOCKERHUB_USERNAME',
+                    passwordVariable: 'DOCKERHUB_PASSWORD'
+                )]) {
+                    echo 'Login ...'
+                    sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}"
+                    echo 'Tagging image...'
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    echo 'Pushing docker image to docker hub...'
+                    sh "docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Run docker compose') {
             steps {
-                script {
-                    docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-credentials') {
-                        def image = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                        image.push()
-                        image.push("latest")
-                    }
-                }
-            }
-        }
-
-        stage('Deploy with Docker Compose') {
-            steps {
-                sh '''
-                    # Update docker-compose.yml with new image tag
-                    sed -i "s|image: ${DOCKER_IMAGE}:latest|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|g" docker-compose.yml
-
-                    # Deploy services
-                    docker-compose down || true
-                    docker-compose up -d
-
-                    # Wait for services to be ready
-                    sleep 30
-                '''
-            }
-        }
-
-        stage('API Tests') {
-            steps {
-                script {
-                    // Wait for application to be ready
-                    sh '''
-                        timeout 300 bash -c '
-                        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/api/users)" != "200" ]]; do
-                            echo "Waiting for application to be ready..."
-                            sleep 5
-                        done'
-                    '''
-
-                    // Test API endpoints
-                    sh '''
-                        # Test POST - Create user
-                        curl -X POST http://localhost:8080/api/users \
-                        -H "Content-Type: application/json" \
-                        -d '{"name":"Test User","email":"test@example.com"}' \
-                        -w "HTTP Status: %{http_code}\\n"
-
-                        # Wait a moment
-                        sleep 2
-
-                        # Test GET - Retrieve users
-                        curl -X GET http://localhost:8080/api/users \
-                        -H "Content-Type: application/json" \
-                        -w "HTTP Status: %{http_code}\\n"
-                    '''
-                }
+                echo "Starting services with Docker Compose..."
+                // sh 'docker compose stop backend'
+                sh 'docker compose up -d --build app'
             }
         }
     }
 
     post {
-        always {
-            sh 'docker-compose logs app || true'
-            cleanWs()
-        }
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed. Please check the logs.'
+
+        }
+        always {
+            echo '🔁 Pipeline execution finished.'
+            echo 'Cleaning up Docker containers...'
+
         }
     }
 }
