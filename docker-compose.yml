@@ -23,7 +23,7 @@ services:
     image: ihebkhalfallah777/front:latest
     container_name: frontend
     environment:
-      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3001
       - NEXT_PUBLIC_UNIVERSITE_API_URL=http://backend:8086/Foyer/universite/addOrUpdate
       - NEXT_PUBLIC_UNIVERSITE_FINDALL_API_URL=http://backend:8086/Foyer/universite/findAll
       - NEXT_PUBLIC_STUDENT_API_URL=http://backend:8086/Foyer/student/addOrUpdate
