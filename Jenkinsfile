@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    
+    options {
+        skipDefaultCheckout()
+    }
 
     environment {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
@@ -104,50 +108,50 @@ pipeline {
         }
     }
 
-    post {
-success {
-            echo '✅ Pipeline completed successfully!'
-            emailext (
-                subject: "SUCCESS: Pipeline '${BUILD_DISPLAY_NAME}'",
-                body: """
-                    <h2>✅ Jenkins Pipeline Succeeded</h2>
-                    <p><b>Project:</b> ${JOB_NAME}</p>
-                    <p><b>Build Number:</b> <a href="${BUILD_URL}">#${BUILD_NUMBER}</a></p>
-                    <p><b>Status:</b> <span style="color:green;font-weight:bold">SUCCESS</span></p>
-                    <p><b>Duration:</b> ${currentBuild.durationString}</p>
-                    <p><b>Changes:</b></p>
-                    <ul>
-                    ${get_change_html()}
-                    </ul>
-                    <p>View full logs: <a href="${BUILD_URL}console">${BUILD_URL}console</a></p>
-                """,
-                to: "${EMAIL_RECIPIENT}",
-                mimeType: 'text/html'
-            )
-        }
-        failure {
-            echo '❌ Pipeline failed. Please check the logs.'
-            emailext (
-                subject: "FAILED: Pipeline '${BUILD_DISPLAY_NAME}'",
-                body: """
-                    <h2>❌ Jenkins Pipeline Failed</h2>
-                    <p><b>Project:</b> ${JOB_NAME}</p>
-                    <p><b>Build Number:</b> <a href="${BUILD_URL}">#${BUILD_NUMBER}</a></p>
-                    <p><b>Status:</b> <span style="color:red;font-weight:bold">FAILURE</span></p>
-                    <p><b>Duration:</b> ${currentBuild.durationString}</p>
-                    <p><b>Last Changes:</b></p>
-                    <ul>
-                    ${get_change_html()}
-                    </ul>
-                    <p><b>Failed Stage:</b> ${currentBuild.currentResult}</p>
-                    <p>View error logs: <a href="${BUILD_URL}console">${BUILD_URL}console</a></p>
-                    <p>Investigate immediately to prevent deployment issues.</p>
-                """,
-                to: "${EMAIL_RECIPIENT}",
-                mimeType: 'text/html'
-            )
-        }
-    }
+//     post {
+// success {
+//             echo '✅ Pipeline completed successfully!'
+//             emailext (
+//                 subject: "SUCCESS: Pipeline '${BUILD_DISPLAY_NAME}'",
+//                 body: """
+//                     <h2>✅ Jenkins Pipeline Succeeded</h2>
+//                     <p><b>Project:</b> ${JOB_NAME}</p>
+//                     <p><b>Build Number:</b> <a href="${BUILD_URL}">#${BUILD_NUMBER}</a></p>
+//                     <p><b>Status:</b> <span style="color:green;font-weight:bold">SUCCESS</span></p>
+//                     <p><b>Duration:</b> ${currentBuild.durationString}</p>
+//                     <p><b>Changes:</b></p>
+//                     <ul>
+//                     ${get_change_html()}
+//                     </ul>
+//                     <p>View full logs: <a href="${BUILD_URL}console">${BUILD_URL}console</a></p>
+//                 """,
+//                 to: "${EMAIL_RECIPIENT}",
+//                 mimeType: 'text/html'
+//             )
+//         }
+//         failure {
+//             echo '❌ Pipeline failed. Please check the logs.'
+//             emailext (
+//                 subject: "FAILED: Pipeline '${BUILD_DISPLAY_NAME}'",
+//                 body: """
+//                     <h2>❌ Jenkins Pipeline Failed</h2>
+//                     <p><b>Project:</b> ${JOB_NAME}</p>
+//                     <p><b>Build Number:</b> <a href="${BUILD_URL}">#${BUILD_NUMBER}</a></p>
+//                     <p><b>Status:</b> <span style="color:red;font-weight:bold">FAILURE</span></p>
+//                     <p><b>Duration:</b> ${currentBuild.durationString}</p>
+//                     <p><b>Last Changes:</b></p>
+//                     <ul>
+//                     ${get_change_html()}
+//                     </ul>
+//                     <p><b>Failed Stage:</b> ${currentBuild.currentResult}</p>
+//                     <p>View error logs: <a href="${BUILD_URL}console">${BUILD_URL}console</a></p>
+//                     <p>Investigate immediately to prevent deployment issues.</p>
+//                 """,
+//                 to: "${EMAIL_RECIPIENT}",
+//                 mimeType: 'text/html'
+//             )
+//         }
+//     }
 }
 
 
