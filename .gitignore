@@ -20,6 +20,9 @@ target/
 *.iml
 *.ipr
 
+prometheus.yml
+*mvn*
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
