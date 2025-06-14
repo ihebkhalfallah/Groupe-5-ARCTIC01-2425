@@ -117,4 +117,41 @@ public class FoyerServiceTest {
         assertEquals("X", result.getNomUniversite());
         assertEquals("Y", result.getAdresse());
     }
+    @Test
+    void testAssignFoyerToAnotherUniversity() {
+        Universite u2 = Universite.builder()
+                .nomUniversite("Université B")
+                .adresse("Sfax")
+                .build();
+
+        Universite savedU2 = universiteService.addOrUpdate(u2);
+
+        // Should reassign if logic allows, or test how system responds
+        Foyer f = foyerService.findById(foyerId);
+        assertNotNull(f);
+
+        savedU2.setFoyer(f);
+        Universite updated = universiteService.addOrUpdate(savedU2);
+
+        assertNotNull(updated.getFoyer());
+        assertEquals(f.getIdFoyer(), updated.getFoyer().getIdFoyer());
+
+        // cleanup
+        universiteService.deleteById(savedU2.getIdUniversite());
+    }
+    @Test
+    void testAddFoyerWithoutBlocs() {
+        Foyer f = Foyer.builder()
+                .nomFoyer("Empty Blocs Foyer")
+                .capaciteFoyer(50L)
+                .build();
+
+        Foyer saved = foyerService.addOrUpdate(f);
+        assertNotNull(saved);
+        assertEquals(0, saved.getBlocs().size());
+
+        // cleanup
+        foyerRepository.deleteById(saved.getIdFoyer());
+    }
+
 }
