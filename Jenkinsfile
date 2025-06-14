@@ -120,8 +120,8 @@ EOF
         stage('Docker Compose') {
             steps {
                 echo "Restarting containers using docker-compose"
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d'
+                sh 'docker compose down || true'
+                sh 'docker compose up -d'
             }
         }
     }
