@@ -121,7 +121,7 @@ EOF
                sh "BUILD_ID=${env.BUILD_ID} docker compose up -d"
                 '''
             }
-        }
+        
     }
 
     post {
