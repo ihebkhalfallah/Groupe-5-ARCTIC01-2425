@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+            skipDefaultCheckout()
+        }
 
     environment {
         GIT_REPO = 'https://github.com/ihebkhalfallah/Groupe-5-ARCTIC01-2425.git'
