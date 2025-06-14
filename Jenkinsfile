@@ -115,20 +115,16 @@ EOF
             }
         }
 
-      stage('Docker Compose') {
+        stage('Docker Compose') {
             steps {
                 echo "Stopping any existing backend container and starting new containers with docker-compose"
                 sh '''
-                    # Stop and remove container if exists (ignore errors)
                     docker rm -f foyer-backend || true
-        
-                    # Start containers in detached mode
                     BUILD_ID=${BUILD_ID} docker compose up -d
                 '''
             }
         }
-
-
+    }
 
     post {
         always {
