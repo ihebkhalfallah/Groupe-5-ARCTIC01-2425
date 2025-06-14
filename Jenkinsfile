@@ -22,7 +22,7 @@ pipeline {
                 echo "Checking out branch '${BRANCH}' from '${GIT_REPO}'"
                 git credentialsId: "${GIT_CREDENTIALS_ID}", branch: "${BRANCH}", url: "${GIT_REPO}"
             }
-        }}
+        }
 
         stage('Get code from Repo') {
             steps {
@@ -47,7 +47,7 @@ pipeline {
         }
 
         stage('Maven Test') {
-             steps {
+            steps {
                 echo "Running mvn test with test profile"
                 sh 'mvn test -Dspring.profiles.active=test'
                 echo "Running mvn verify to generate JaCoCo report"
@@ -61,10 +61,10 @@ pipeline {
                     echo "Running SonarQube analysis"
                     sh """
                         ls -l target/site/jacoco/jacoco.xml
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.host.url=$SONAR_HOST_URL \
-                            -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        mvn sonar:sonar \\
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \\
+                            -Dsonar.host.url=$SONAR_HOST_URL \\
+                            -Dsonar.login=$SONAR_AUTH_TOKEN \\
                             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     """
                 }
@@ -119,6 +119,7 @@ EOF
 
         stage('Docker Compose') {
             steps {
+                echo "Restarting containers using docker-compose"
                 sh 'docker-compose down || true'
                 sh 'docker-compose up -d'
             }
