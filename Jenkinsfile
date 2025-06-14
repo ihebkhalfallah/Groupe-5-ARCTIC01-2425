@@ -47,12 +47,12 @@ pipeline {
             }
         }
 
-        stage('Maven Test') {
-            steps {
-                echo "Running mvn test"
-                sh 'mvn test'
-            }
-        }
+       stage('Maven Test') {
+    steps {
+        sh 'mvn clean verify -Dspring.profiles.active=test'
+    }
+}
+
 
        stage('Sonar Test') {
         steps {
